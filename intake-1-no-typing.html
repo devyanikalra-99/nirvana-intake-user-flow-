@@ -1,0 +1,849 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Patient intake, no typing</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Instrument+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+:root{
+  --canvas:#E9EBEF;--grid:#DCDFE6;--ink:#131720;--muted:#69707E;--hair:#C9CED8;--paper:#FFFFFF;
+  --brand:#2F6B57;--brand-soft:#E7F0EC;
+  --ui:'Instrument Sans',system-ui,sans-serif;
+}
+*{box-sizing:border-box}
+html,body{margin:0;min-height:100%}
+body{font-family:var(--ui);color:var(--ink);-webkit-font-smoothing:antialiased;
+  background:linear-gradient(var(--grid) 1px,transparent 1px) 0 0/28px 28px,
+             linear-gradient(90deg,var(--grid) 1px,transparent 1px) 0 0/28px 28px,var(--canvas);}
+:focus-visible{outline:2px solid var(--brand);outline-offset:2px}
+
+.bar{display:flex;align-items:center;gap:16px;flex-wrap:wrap;padding:14px 22px;background:rgba(255,255,255,.85);
+  backdrop-filter:blur(8px);border-bottom:1px solid var(--hair);position:sticky;top:0;z-index:40}
+.mark{font-weight:700;font-size:15px;letter-spacing:-.01em}
+.mark span{color:var(--muted);font-weight:400}
+.tabs{display:flex;gap:2px;background:var(--canvas);border-radius:8px;padding:3px}
+.tabs button{font:inherit;font-size:13px;font-weight:500;border:none;background:transparent;color:var(--muted);padding:6px 14px;border-radius:6px;cursor:pointer}
+.tabs button[aria-selected="true"]{background:var(--paper);color:var(--ink);box-shadow:0 1px 2px rgba(0,0,0,.08)}
+.spacer{flex:1}
+.swatches{display:flex;align-items:center;gap:7px}
+.swatches p{font-size:12.5px;color:var(--muted);margin:0 4px 0 0}
+.sw{width:22px;height:22px;border-radius:50%;border:2px solid transparent;cursor:pointer;padding:0}
+.sw[aria-pressed="true"]{border-color:var(--ink)}
+
+.stage{display:flex;flex-direction:column;align-items:center;padding:40px 22px 70px;gap:20px}
+.device{width:352px;height:716px;background:#0B0D11;border-radius:46px;padding:11px;position:relative;flex:none;
+  box-shadow:0 32px 70px -30px rgba(16,20,28,.55),0 0 0 1px rgba(0,0,0,.14)}
+.notch{position:absolute;top:20px;left:50%;transform:translateX(-50%);width:100px;height:27px;background:#0B0D11;border-radius:14px;z-index:7}
+.viewport{width:100%;height:100%;background:var(--paper);border-radius:36px;overflow:hidden;display:flex;flex-direction:column;position:relative}
+.status{display:flex;justify-content:space-between;padding:14px 26px 4px;font-size:12.5px;font-weight:600;position:relative;z-index:4}
+.status em{font-style:normal;letter-spacing:.04em}
+.appbar{display:flex;align-items:center;gap:8px;padding:14px 22px 6px}
+.logo{width:20px;height:20px;border-radius:6px;background:var(--brand)}
+.wordmark{font-weight:700;font-size:14.5px;letter-spacing:-.01em}
+.screen{flex:1;padding:6px 20px 20px;display:flex;flex-direction:column;overflow:hidden}
+.screen.in-fwd{animation:inFwd .4s cubic-bezier(.32,.72,0,1) both}
+.screen.in-back{animation:inBack .4s cubic-bezier(.32,.72,0,1) both}
+.screen.in-fade{animation:inFade .32s ease both}
+@keyframes inFwd{from{transform:translate3d(28px,0,0);opacity:0}to{transform:none;opacity:1}}
+@keyframes inBack{from{transform:translate3d(-28px,0,0);opacity:0}to{transform:none;opacity:1}}
+@keyframes inFade{from{opacity:0}to{opacity:1}}
+
+/* outgoing screen is cloned here so the two overlap instead of flashing blank */
+.ghost{position:absolute;pointer-events:none;z-index:3;display:flex;flex-direction:column;
+  overflow:hidden;background:var(--paper);will-change:transform,opacity}
+.ghost.out-fwd{animation:outFwd .4s cubic-bezier(.32,.72,0,1) forwards}
+.ghost.out-back{animation:outBack .4s cubic-bezier(.32,.72,0,1) forwards}
+@keyframes outFwd{from{transform:none;opacity:1}to{transform:translate3d(-28px,0,0);opacity:0}}
+@keyframes outBack{from{transform:none;opacity:1}to{transform:translate3d(28px,0,0);opacity:0}}
+#chrome{transition:opacity .3s ease}
+
+h2.t{font-size:23px;line-height:1.12;letter-spacing:-.025em;font-weight:700;margin:6px 0 8px}
+p.s{font-size:13px;line-height:1.5;color:var(--muted);margin:0 0 12px}
+.grow{flex:1;min-height:10px}
+.btn{font-size:15px;font-weight:600;width:100%;border-radius:12px;background:var(--brand);color:#fff;padding:14px;text-align:center}
+.btn.dark{background:#000}
+.legal{font-size:9.5px;line-height:1.5;color:#8A909C;margin:10px 0 0}
+.legal b{color:var(--ink);font-weight:500}
+.legal u{text-decoration-color:#B9BEC8}
+.card{border:1px solid var(--hair);border-radius:14px;padding:14px;margin-bottom:10px}
+.card.tint{background:var(--brand-soft);border-color:transparent}
+.who{display:flex;gap:12px;align-items:center;margin-bottom:10px}
+.av{border-radius:50%;background:var(--brand);color:#fff;display:flex;align-items:center;justify-content:center;font-weight:600}
+.who .av{width:40px;height:40px;font-size:13.5px}
+.who h3{margin:0;font-size:16px;letter-spacing:-.01em}
+.kv{display:flex;justify-content:space-between;gap:12px;padding:8px 0;border-top:1px solid #EEF0F3;font-size:12.5px}
+.kv:first-of-type{border-top:none}
+.kv span{color:var(--muted)}
+.kv b{font-weight:600;text-align:right}
+.pill{display:inline-flex;align-items:center;gap:6px;font-size:11.5px;font-weight:600;background:var(--brand-soft);color:var(--brand);border-radius:20px;padding:5px 11px;align-self:flex-start}
+.pill .dotp{width:6px;height:6px;border-radius:50%;background:currentColor}
+.pill.live .dotp{animation:blink 1.2s ease-in-out infinite}
+@keyframes blink{50%{opacity:.25}}
+.opt{display:flex;gap:10px;align-items:flex-start;padding:11px 12px;border:1px solid var(--brand);background:var(--brand-soft);border-radius:12px;margin-bottom:10px}
+.boxc{width:19px;height:19px;border-radius:5px;background:var(--brand);color:#fff;display:flex;align-items:center;justify-content:center;font-size:12px;flex:none;margin-top:1px}
+.opt p{margin:0;font-size:12.5px;font-weight:600;line-height:1.35}
+.opt small{display:block;font-weight:400;color:var(--muted);font-size:11px;margin-top:2px}
+.slots{display:grid;gap:7px}
+.slot{font-size:13.5px;padding:11px 14px;border:1px solid var(--hair);border-radius:11px;background:var(--paper);display:flex;justify-content:space-between}
+.slot.on{border-color:var(--brand);background:var(--brand-soft);font-weight:600}
+.spin{width:36px;height:36px;border-radius:50%;border:2.5px solid #E7E9ED;border-top-color:var(--brand);animation:sp 1s linear infinite;margin:0 auto 16px}
+@keyframes sp{to{transform:rotate(360deg)}}
+.tick{width:54px;height:54px;border-radius:50%;background:var(--brand);color:#fff;display:flex;align-items:center;justify-content:center;font-size:26px;margin:0 auto 14px}
+.center{text-align:center}
+
+/* search */
+.searchbar{display:flex;align-items:center;gap:8px;background:#F1F2F5;border-radius:11px;padding:9px 12px;font-size:13px;color:var(--muted);margin-bottom:10px}
+.fgroup{margin-bottom:9px}
+.flabel{font-size:10px;font-weight:700;letter-spacing:.07em;text-transform:uppercase;color:#98A0AD;margin:0 0 5px}
+.chips{display:flex;gap:6px;flex-wrap:wrap}
+.chip{font-size:11px;font-weight:600;border:1px solid var(--hair);border-radius:20px;padding:5px 10px;background:var(--paper);color:#5C6472;white-space:nowrap}
+.chip.on{background:var(--brand);border-color:var(--brand);color:#fff}
+.resultline{font-size:11px;color:var(--muted);margin:8px 0 8px;font-weight:600}
+.plist{overflow:hidden}
+.prov{display:flex;gap:10px;align-items:flex-start;padding:9px 10px;border:1px solid var(--hair);border-radius:12px;margin-bottom:7px}
+.prov .av{width:36px;height:36px;font-size:12px;flex:none}
+.prov h3{margin:0;font-size:13.5px}
+.prov p{margin:1px 0 0;font-size:11px;color:var(--muted);line-height:1.35}
+.prov .next{font-size:10.5px;color:var(--brand);font-weight:600;margin-top:2px}
+.tagline{display:flex;gap:4px;margin-top:4px;flex-wrap:wrap}
+.tag{font-size:9px;font-weight:600;background:#F1F2F5;color:#5C6472;border-radius:5px;padding:2px 5px}
+
+/* profile */
+.prohead{display:flex;gap:12px;align-items:center;margin:2px 0 10px}
+.prohead .av{width:54px;height:54px;font-size:17px;flex:none}
+.prohead h3{margin:0;font-size:18px;letter-spacing:-.015em}
+.prohead p{margin:2px 0 0;font-size:12px;color:var(--muted)}
+.prohead .stars{font-size:11px;color:var(--brand);font-weight:600;margin-top:3px}
+.bio{font-size:12px;line-height:1.5;color:#3E4653;margin:0 0 8px}
+.bio b{font-weight:600;color:var(--ink)}
+.metarow{display:flex;gap:14px;font-size:11px;color:var(--muted);margin-bottom:9px;flex-wrap:wrap}
+.metarow b{display:block;color:var(--ink);font-size:12px;font-weight:600}
+
+/* home */
+.home{position:absolute;inset:0;border-radius:36px;padding:52px 22px 16px;display:flex;flex-direction:column;
+  background:radial-gradient(120% 80% at 30% 0%, #4B5A73 0%, #2A3446 45%, #161C26 100%)}
+.homeclock{color:#fff;text-align:center;margin-bottom:24px}
+.homeclock b{display:block;font-size:18px;font-weight:600;opacity:.92}
+.homeclock i{display:block;font-style:normal;font-size:58px;font-weight:600;letter-spacing:-.035em;line-height:1.05}
+.homegrid{display:grid;grid-template-columns:repeat(4,1fr);gap:18px 16px}
+.appcell{text-align:center}
+.appicon{aspect-ratio:1;border-radius:16px;display:flex;align-items:center;justify-content:center;font-size:19px;color:#fff;box-shadow:0 4px 12px rgba(0,0,0,.28)}
+.applabel{color:#fff;font-size:9.5px;margin-top:5px;text-shadow:0 1px 3px rgba(0,0,0,.55);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.tipzone{flex:1;min-height:60px}
+.dock{background:rgba(255,255,255,.16);backdrop-filter:blur(10px);border-radius:24px;padding:11px;display:grid;grid-template-columns:repeat(4,1fr);gap:16px}
+.dock .appicon{border-radius:15px}
+
+/* apple pay */
+.apsheet{position:absolute;left:0;right:0;bottom:0;background:#F7F7F9;border-radius:22px 22px 36px 36px;padding:15px 18px 22px;
+  box-shadow:0 -18px 50px rgba(0,0,0,.28);animation:rise .4s cubic-bezier(.2,.8,.3,1);z-index:5}
+@keyframes rise{from{transform:translateY(60%);opacity:.4}to{transform:none;opacity:1}}
+.aphead{display:flex;justify-content:space-between;align-items:center;font-size:16px;font-weight:600;margin-bottom:11px}
+.apcard{background:#fff;border-radius:12px;padding:10px 12px;font-size:12px;display:flex;justify-content:space-between;margin-bottom:7px;align-items:center}
+.apcard small{display:block;color:var(--muted);font-size:10.5px}
+.apvisa{width:34px;height:22px;border-radius:4px;background:linear-gradient(135deg,#1A1F71,#2B3AA0);color:#fff;font-size:8px;font-weight:700;display:flex;align-items:center;justify-content:center}
+.aptotal{display:flex;justify-content:space-between;font-size:15px;font-weight:700;padding:10px 2px 12px;border-top:1px solid #E3E3E8;margin-top:3px}
+.faceid{text-align:center;padding:4px 0 2px}
+.faceid .fi{width:48px;height:48px;border-radius:13px;border:2.5px solid #111;margin:0 auto 8px;animation:scan 1.8s ease-in-out infinite}
+@keyframes scan{0%,100%{opacity:1}50%{opacity:.35}}
+.faceid p{margin:0;font-size:13px;font-weight:600}
+.faceid small{color:var(--muted);font-size:11px}
+.dblclick{position:absolute;right:-11px;top:150px;width:4px;height:64px;background:#3A3F47;border-radius:0 3px 3px 0}
+.dbllabel{position:absolute;right:8px;top:118px;background:var(--ink);color:#fff;font-size:10px;font-weight:600;padding:4px 8px;border-radius:14px;z-index:9}
+
+/* tap + tooltip */
+.tapdot{position:absolute;z-index:8;pointer-events:none;transform:translate(-50%,-50%)}
+.tapdot i{display:block;width:32px;height:32px;border-radius:50%;background:rgba(255,255,255,.45);border:2px solid rgba(255,255,255,.95);
+  box-shadow:0 0 0 2px rgba(19,23,32,.28),0 6px 18px rgba(0,0,0,.35);animation:press .6s ease-out}
+@keyframes press{0%{transform:scale(1.8);opacity:0}50%{transform:scale(.85);opacity:1}100%{transform:scale(1);opacity:.9}}
+.tip.out{opacity:0;transition:opacity .18s ease}
+.tip{position:absolute;z-index:9;background:var(--ink);color:#fff;font-size:12.5px;line-height:1.5;
+  padding:11px 14px;border-radius:12px;box-shadow:0 14px 34px rgba(0,0,0,.32);animation:pop .3s cubic-bezier(.33,.9,.35,1)}
+@keyframes pop{from{opacity:0;transform:translateY(4px)}to{opacity:1;transform:none}}
+
+.controls{display:flex;align-items:center;gap:10px;flex-wrap:wrap;justify-content:center}
+.controls button{font:inherit;font-size:13px;font-weight:500;background:var(--paper);border:1px solid var(--hair);border-radius:8px;padding:8px 14px;cursor:pointer}
+.controls button:disabled{opacity:.4;cursor:default}
+.controls button.play{background:var(--ink);color:#fff;border-color:var(--ink);min-width:82px}
+.stepn{font-size:12.5px;color:var(--muted);font-weight:600}
+.dots{display:flex;gap:5px}
+.dots i{width:6px;height:6px;border-radius:50%;background:var(--hair);display:block}
+.dots i.on{background:var(--ink)}
+
+/* insights */
+.panel{max-width:1000px;margin:0 auto;padding:38px 22px 90px}
+.panel h1{font-size:30px;letter-spacing:-.028em;margin:0 0 14px}
+.livebar{display:flex;flex-wrap:wrap;gap:26px;align-items:center;background:var(--brand-soft);border:1px solid rgba(47,107,87,.28);
+  border-radius:13px;padding:14px 18px;margin-bottom:22px}
+.livetag{display:inline-flex;align-items:center;gap:7px;font-size:12px;font-weight:700;color:var(--brand);letter-spacing:.02em}
+.livetag i{width:8px;height:8px;border-radius:50%;background:var(--brand);animation:blink 1.4s ease-in-out infinite}
+.livebar .m b{display:block;font-size:21px;letter-spacing:-.025em;font-variant-numeric:tabular-nums;color:var(--brand)}
+.livebar .m span{font-size:12px;color:#3F6659}
+.summary{background:var(--paper);border:1px solid var(--hair);border-radius:13px;padding:18px 20px;margin-bottom:24px}
+.summary h2{font-size:16px;margin:0 0 12px;letter-spacing:-.01em}
+.summary ul{margin:0;padding-left:19px}
+.summary li{font-size:13.5px;line-height:1.6;margin-bottom:9px;color:#3E4653}
+.summary li:last-child{margin-bottom:0}
+.summary li b{color:var(--ink)}
+.kpis{display:grid;grid-template-columns:repeat(auto-fit,minmax(178px,1fr));gap:12px}
+.kpi{background:var(--paper);border:1px solid var(--hair);border-radius:12px;padding:15px 16px}
+.kpi b{display:block;font-size:28px;letter-spacing:-.03em;font-variant-numeric:tabular-nums;line-height:1.1}
+.kpi span{font-size:12.5px;color:var(--muted);display:block;margin-top:3px}
+.kpi em{font-style:normal;font-size:11.5px;font-weight:600;color:var(--brand)}
+.kpi em.down{color:#B0405C}
+h2.sec{font-size:17px;letter-spacing:-.015em;margin:30px 0 6px}
+p.note{font-size:13px;color:var(--muted);margin:0 0 12px;max-width:72ch}
+.box2{background:var(--paper);border:1px solid var(--hair);border-radius:13px;padding:6px 18px 14px}
+.frow{display:grid;grid-template-columns:196px 1fr 74px 62px 66px;gap:12px;align-items:center;padding:13px 0;border-bottom:1px solid #EEF0F3;font-size:13px}
+.frow:last-child{border-bottom:none}
+.frow.head{padding:11px 0 8px;border-bottom:1px solid var(--hair);font-size:11.5px;color:var(--muted);font-weight:600}
+.frow h3{font-size:13.5px;margin:0;font-weight:600}
+.frow small{display:block;color:var(--muted);font-weight:400;font-size:11.5px;margin-top:1px}
+.trackbar{height:10px;background:#EDEFF3;border-radius:5px;overflow:hidden}
+.fill{height:100%;background:var(--brand);border-radius:5px;transition:width .7s cubic-bezier(.2,.7,.3,1)}
+.num{text-align:right;font-variant-numeric:tabular-nums;font-weight:600}
+.dim{text-align:right;font-variant-numeric:tabular-nums;color:var(--muted);font-weight:400}
+.leak{text-align:right;font-variant-numeric:tabular-nums;font-weight:600;color:#B0405C}
+.leak.zero{color:var(--muted);font-weight:400}
+.split{display:grid;grid-template-columns:1fr 1fr;gap:16px}
+.mix{display:flex;height:32px;border-radius:8px;overflow:hidden;margin:2px 0 14px}
+.mix div{display:flex;align-items:center;justify-content:center;font-size:11.5px;font-weight:600;color:#fff}
+.legend{display:flex;flex-direction:column;gap:11px}
+.lrow{display:grid;grid-template-columns:12px 1fr auto 54px;gap:10px;align-items:start;font-size:13px}
+.lrow i{width:11px;height:11px;border-radius:3px;display:block;margin-top:4px}
+.lrow b{font-variant-numeric:tabular-nums}
+.lrow span.conv{font-variant-numeric:tabular-nums;color:var(--muted);text-align:right}
+.lrow em{display:block;font-style:normal;font-size:11.5px;color:var(--muted);margin-top:2px;line-height:1.4}
+.callout{border-left:3px solid #B0405C;background:#FBEDF0;border-radius:0 10px 10px 0;padding:14px 16px;margin-top:14px}
+.callout h3{margin:0 0 4px;font-size:14px}
+.callout p{margin:0;font-size:13px;color:#6B4550;line-height:1.5}
+.lat{display:flex;gap:24px;flex-wrap:wrap;margin-top:16px}
+.lat div b{display:block;font-size:21px;letter-spacing:-.02em;font-variant-numeric:tabular-nums}
+.lat div span{font-size:12px;color:var(--muted)}
+table.pct{width:100%;border-collapse:collapse;font-size:13px}
+table.pct th{text-align:right;font-size:11.5px;color:var(--muted);font-weight:600;padding:11px 0 8px;border-bottom:1px solid var(--hair)}
+table.pct th:first-child{text-align:left}
+table.pct td{padding:11px 0;border-bottom:1px solid #EEF0F3;text-align:right;font-variant-numeric:tabular-nums}
+table.pct td:first-child{text-align:left}
+table.pct tr:last-child td{border-bottom:none}
+table.pct td.med{font-weight:700}
+table.pct td small{display:block;color:var(--muted);font-weight:400;font-size:11.5px;margin-top:1px}
+.foot{font-size:12.5px;color:var(--muted);margin-top:24px}
+@media (max-width:860px){.split{grid-template-columns:1fr}.frow{grid-template-columns:130px 1fr 60px 50px 56px;font-size:12px}}
+@media (prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}}
+
+/* typed fields */
+.typed{font-size:20px;letter-spacing:.04em;padding:14px;border:1.5px solid var(--brand);border-radius:11px;
+  font-variant-numeric:tabular-nums;min-height:52px;display:flex;align-items:center;justify-content:center;margin-bottom:8px}
+.typed.empty{border-color:var(--hair);color:#A8B0BC}
+.caret{display:inline-block;width:2px;height:20px;background:var(--brand);margin-left:2px;animation:cb .9s steps(1) infinite;vertical-align:-3px}
+@keyframes cb{50%{opacity:0}}
+.otpbox{display:flex;gap:6px;margin-bottom:10px}
+.otpbox i{flex:1;height:50px;border:1.5px solid var(--hair);border-radius:11px;display:flex;align-items:center;justify-content:center;
+  font-size:19px;font-weight:600;font-style:normal;font-variant-numeric:tabular-nums}
+.otpbox i.on{border-color:var(--brand)}
+.sms{background:#F1F2F5;border-radius:12px;padding:10px 12px;font-size:12px;margin-bottom:10px}
+.sms b{display:block;font-size:10.5px;color:var(--muted);font-weight:600;margin-bottom:2px}
+.hintline{font-size:11.5px;color:var(--muted);margin:0 0 10px}
+/* dropdown filters */
+.selrow{display:grid;grid-template-columns:1fr 1fr 1fr;gap:7px;margin-bottom:12px;position:relative;z-index:5}
+.sel{position:relative;border:1px solid var(--hair);border-radius:10px;padding:7px 9px;background:#fff;cursor:default}
+.sel .lab{font-size:8.5px;text-transform:uppercase;letter-spacing:.07em;color:#98A0AD;font-weight:700;display:block;margin-bottom:1px}
+.sel .val{font-size:11.5px;font-weight:600;display:flex;justify-content:space-between;align-items:center;gap:4px;white-space:nowrap}
+.sel .val i{font-style:normal;font-size:8px;color:#98A0AD}
+.sel.set{border-color:var(--brand);background:var(--brand-soft)}
+.sel.set .val{color:var(--brand)}
+.sel.open{border-color:var(--brand);box-shadow:0 0 0 3px rgba(47,107,87,.12)}
+.selmenu{position:absolute;top:calc(100% + 5px);left:0;min-width:100%;background:#fff;border:1px solid var(--hair);
+  border-radius:10px;box-shadow:0 12px 28px rgba(0,0,0,.16);z-index:9;overflow:hidden;animation:menuIn .17s ease-out}
+@keyframes menuIn{from{opacity:0;transform:translateY(-4px)}to{opacity:1;transform:none}}
+.selmenu div{padding:8px 11px;font-size:11.5px;white-space:nowrap;border-bottom:1px solid #F2F3F6}
+.selmenu div:last-child{border-bottom:none}
+.selmenu div.hot{background:var(--brand-soft);color:var(--brand);font-weight:600}
+/* collapsing list */
+.prov{overflow:hidden;transition:max-height .38s cubic-bezier(.4,0,.2,1),opacity .2s ease,margin .38s cubic-bezier(.4,0,.2,1),padding .38s cubic-bezier(.4,0,.2,1),border-width .3s ease;max-height:110px}
+.prov.gone{max-height:0;opacity:0;margin-bottom:0;padding-top:0;padding-bottom:0;border-width:0}
+.resultline{transition:color .2s ease}
+</style>
+</head>
+<body>
+
+<div class="bar">
+  <div class="mark">Northwood Health <span>· patient intake</span></div>
+  <div class="tabs" role="tablist">
+    <button role="tab" aria-selected="true" id="tabFlow">Walkthrough</button>
+    <button role="tab" aria-selected="false" id="tabIns">Insights</button>
+  </div>
+  <div class="spacer"></div>
+  <div class="swatches" id="sw">
+    <p>Brand</p>
+    <button class="sw" data-c="#2F6B57" data-s="#E7F0EC" style="background:#2F6B57" aria-pressed="true" title="Sage"></button>
+    <button class="sw" data-c="#3A43B8" data-s="#E9EAF8" style="background:#3A43B8" aria-pressed="false" title="Indigo"></button>
+    <button class="sw" data-c="#B0405C" data-s="#FAE9ED" style="background:#B0405C" aria-pressed="false" title="Rose"></button>
+    <button class="sw" data-c="#1E2430" data-s="#ECEEF1" style="background:#1E2430" aria-pressed="false" title="Ink"></button>
+  </div>
+</div>
+
+<div id="flowView">
+<div class="stage">
+  <div class="device">
+    <div class="notch"></div>
+    <div class="viewport" id="vp">
+      <div class="status"><em>9:41</em><em>5G ▮</em></div>
+      <div id="chrome"><div class="appbar"><div class="logo"></div><div class="wordmark">Northwood Health</div></div></div>
+      <div class="screen" id="screen"></div>
+    </div>
+  </div>
+  <div class="controls">
+    <button id="back">Back</button>
+    <button class="play" id="play">Pause</button>
+    <button id="next">Next</button>
+    <span class="stepn" id="capn"></span>
+    <div class="dots" id="dots"></div>
+    <button id="restart">Restart</button>
+  </div>
+</div>
+</div>
+
+<div id="insView" hidden>
+  <div class="panel">
+    <h1>Intake conversion</h1>
+
+    <div class="livebar">
+      <span class="livetag"><i></i>LIVE · REAL TIME · <span id="clock" style="font-variant-numeric:tabular-nums">--:--:--</span></span>
+      <div class="m"><b>Last 30 days</b><span>rolling window</span></div>
+      <div class="m"><b>1,523</b><span>total sessions booked via mobile app</span></div>
+      <div class="m"><b>4,283</b><span>sessions started</span></div>
+    </div>
+
+    <div class="summary">
+      <h2>Key findings</h2>
+      <ul>
+        <li><b>Silent authentication is worth 23 points of conversion.</b> Sessions confirmed by the carrier book at 71%; sessions that fall back to a one-time code book at 48%.</li>
+        <li><b>31% of sessions fall back to a one-time code.</b> The OTP path should stay a single screen with autofill enabled so the patient is never sent out of the flow to retrieve a code manually.</li>
+        <li><b>Returning patients convert best at 78%.</b> Device recognition removes the identity step entirely on repeat visits. Binding the device on first contact compounds, and this cohort is 17% of volume today.</li>
+        <li><b>Scheduling is the largest single leak at 19.4%.</b> These patients were already verified and already had coverage returned, so the loss is driven by availability rather than by verification.</li>
+        <li><b>28% of coverage lookups return nothing, and those sessions collect no copay.</b> At current volume that is roughly $25,000 per month in payment left uncollected at booking. A card-capture fallback should be added before the payment step rather than after the visit.</li>
+        <li><b>Intake abandonment fell from 34.8% to 7.1%.</b> The residual is concentrated in sessions where both identity paths failed and the patient was routed to manual entry, for example a patient on a prepaid line the carrier could not match, who is then asked to type name, address, date of birth and insurance details by hand.</li>
+      </ul>
+    </div>
+
+    <div class="kpis">
+      <div class="kpi"><b>52.6%</b><span>intent to booked</span><em>+14.2 pts vs. manual intake</em></div>
+      <div class="kpi"><b>1m 48s</b><span>median time to booked</span><em>−4m 12s</em></div>
+      <div class="kpi"><b>61%</b><span>sessions with zero typing</span><em>+61 pts</em></div>
+      <div class="kpi"><b>$21.40</b><span>copay collected per session</span><em>+$9.80</em></div>
+      <div class="kpi"><b>7.1%</b><span>intake abandonment</span><em class="down">was 34.8%</em></div>
+    </div>
+
+    <h2 class="sec">Funnel</h2>
+    <p class="note">Step conversion is measured against the previous stage.</p>
+    <div class="box2" id="funnel"></div>
+    <div class="callout">
+      <h3>Biggest leak: choosing a time</h3>
+      <p>19.4% of patients who confirmed their details never picked a time slot. Every one of them had already been verified and already had coverage returned, so nothing about identity or insurance caused the drop. They saw one day of availability and left. Worth testing a three-day slot window instead of one, or surfacing the next opening on the clinician's profile.</p>
+    </div>
+
+    <div class="split">
+      <div>
+        <h2 class="sec">How identity was confirmed</h2>
+        <div class="box2" style="padding:16px 18px">
+          <div class="mix">
+            <div style="width:44%;background:#2F6B57">44%</div>
+            <div style="width:17%;background:#5E9682">17%</div>
+            <div style="width:31%;background:#9AB6AB">31%</div>
+            <div style="width:8%;background:#C6CFCB;color:#3E4A45">8%</div>
+          </div>
+          <div class="legend">
+            <div class="lrow"><i style="background:#2F6B57"></i>
+              <span>Silent, carrier confirmed<em>First-time patient. The mobile carrier confirms this device holds the line, live, during the session.</em></span><b>1,839</b><span class="conv">71%</span></div>
+            <div class="lrow"><i style="background:#5E9682"></i>
+              <span>Recognized device<em>Returning patient. The device was verified on a previous visit, so no carrier check is needed.</em></span><b>711</b><span class="conv">78%</span></div>
+            <div class="lrow"><i style="background:#9AB6AB"></i>
+              <span>OTP required (silent authentication failed)<em>Wi-Fi, VPN or unsupported carrier. The patient enters their number and a texted code.</em></span><b>1,296</b><span class="conv">48%</span></div>
+            <div class="lrow"><i style="background:#C6CFCB"></i>
+              <span>Could not confirm<em>Neither path completed. The patient is routed to manual entry.</em></span><b>334</b><span class="conv">11%</span></div>
+          </div>
+          <p class="note" style="margin:14px 0 0">Right column is the share of those sessions that reach a booking.</p>
+        </div>
+      </div>
+
+      <div>
+        <h2 class="sec">Insurance recovery</h2>
+        <div class="box2" style="padding:16px 18px">
+          <div class="legend">
+            <div class="lrow"><i style="background:#2F6B57"></i><span>Active policy found</span><b>2,314</b><span class="conv">64%</span></div>
+            <div class="lrow"><i style="background:#9AB6AB"></i><span>Found, needs review</span><b>287</b><span class="conv">8%</span></div>
+            <div class="lrow"><i style="background:#C6CFCB"></i><span>Nothing found</span><b>1,012</b><span class="conv">28%</span></div>
+          </div>
+          <div class="lat">
+            <div><b>4.2s</b><span>median lookup</span></div>
+            <div><b>19.6s</b><span>90th percentile</span></div>
+            <div><b>38s</b><span>median time on scheduling</span></div>
+          </div>
+          <p class="note" style="margin:14px 0 0">Lookup runs behind the scheduling screen; 96% resolve before the patient selects a slot.</p>
+        </div>
+      </div>
+    </div>
+
+    <h2 class="sec">Time spent at each stage</h2>
+    <p class="note">Seconds per patient. p95 is where the slowest sessions abandon.</p>
+    <div class="box2" style="padding:2px 18px 10px"><table class="pct" id="pcttable"></table></div>
+
+    <p class="foot">Figures are illustrative sample data for demonstration. Prototype runs on this device: <b id="sRuns">0</b>.</p>
+  </div>
+</div>
+
+<script>
+document.getElementById('sw').addEventListener('click',e=>{
+  const b=e.target.closest('.sw'); if(!b) return;
+  document.querySelectorAll('.sw').forEach(x=>x.setAttribute('aria-pressed',String(x===b)));
+  document.documentElement.style.setProperty('--brand',b.dataset.c);
+  document.documentElement.style.setProperty('--brand-soft',b.dataset.s);
+});
+
+const screen=document.getElementById('screen'), chrome=document.getElementById('chrome'), vp=document.getElementById('vp');
+let i=0, playing=true, timer=null, tapTimers=[], tipTimer=null, typeTimers=[], seqTimers=[];
+
+const APPS=[
+  {n:"FaceTime",c:"#3BC85A",g:"\u25B6"},{n:"Calendar",c:"#FFFFFF",g:"31",t:"#E5484D"},{n:"Photos",c:"#F5F5F7",g:"\u274B",t:"#E8A020"},{n:"Camera",c:"#5A5F6B",g:"\u25C9"},
+  {n:"Mail",c:"#2A7BF6",g:"\u2709"},{n:"Notes",c:"#FBD24D",g:"\u25A4",t:"#7A5C00"},{n:"Maps",c:"#4CAF6E",g:"\u27A4"},{n:"Weather",c:"#3D8BE8",g:"\u2600"},
+  {n:"Clock",c:"#16181D",g:"\u25F7"},{n:"Health",c:"#FFFFFF",g:"\u2665",t:"#F04A6E"},{n:"Wallet",c:"#22252B",g:"\u25A6"}
+];
+const DOCK=[{n:"Phone",c:"#3BC85A",g:"\u2706"},{n:"Safari",c:"#2A7BF6",g:"\u25CE"},{n:"Messages",c:"#3BC85A",g:"\u270E"},{n:"Music",c:"#F04A56",g:"\u266B"}];
+const app=(a,id)=>`<div class="appcell"><div class="appicon" ${id?`id="${id}"`:""} style="background:${a.c};color:${a.t||"#fff"}">${a.g}</div><div class="applabel">${a.n}</div></div>`;
+
+const ALL=[
+  {k:"jl",i:"JL",n:"Dr. Jonah Lieu",role:"Psychiatry",mi:6.2,fmt:"video",spec:["adhd"],tags:["Medication","ADHD"],next:"Sep 9"},
+  {k:"tn",i:"TN",n:"Dr. Tom\u00E1s Neri",role:"Therapy",mi:14.8,fmt:"person",spec:["couples"],tags:["Couples","Grief"],next:"Sep 22"},
+  {k:"ao",i:"AO",n:"Dr. Amara Osei",role:"Therapy",mi:2.1,fmt:"person",spec:["anx"],tags:["Anxiety","CBT"],next:"Sep 3"},
+  {k:"pw",i:"PW",n:"Dr. Priya Whitfield",role:"Therapy",mi:4.6,fmt:"person",spec:["anx"],tags:["Anxiety","ACT"],next:"Sep 4"},
+  {k:"sg",i:"SG",n:"Dr. Sana Ghadiri",role:"Therapy",mi:21.4,fmt:"video",spec:["trauma"],tags:["Trauma","EMDR"],next:"Sep 6"},
+  {k:"mb",i:"MB",n:"Dr. Marcus Bell",role:"Therapy",mi:7.3,fmt:"person",spec:["anx"],tags:["Anxiety","Panic"],next:"Sep 5"},
+  {k:"rk",i:"RK",n:"Dr. Ruth Kaplan",role:"Therapy",mi:9.9,fmt:"video",spec:["depression"],tags:["Depression"],next:"Sep 11"},
+  {k:"dv",i:"DV",n:"Dr. Daniel Vo",role:"Psychiatry",mi:3.4,fmt:"person",spec:["ocd"],tags:["OCD","Medication"],next:"Sep 17"}
+];
+const provHTML=p=>`<div class="prov" data-k="${p.k}" ${p.k==='ao'?'id="pick"':''}><div class="av">${p.i}</div><div>
+  <h3>${p.n}</h3><p>${p.role} \u00B7 ${p.mi} mi \u00B7 ${p.fmt==='video'?'video only':'in person'}</p>
+  <div class="tagline">${p.tags.map(t=>`<span class="tag">${t}</span>`).join("")}</div>
+  <div class="next">Next open ${p.next}</div></div></div>`;
+
+function searchScreen(){
+  return `
+  <h2 class="t">Find care</h2>
+  <div class="searchbar"><span>\u2315</span><span>Search therapists near you</span></div>
+  <div class="selrow">
+    <div class="sel" id="selDist"><span class="lab">Distance</span><span class="val" id="vDist">Any <i>\u25BC</i></span></div>
+    <div class="sel" id="selFmt"><span class="lab">Format</span><span class="val" id="vFmt">Any <i>\u25BC</i></span></div>
+    <div class="sel" id="selSpec"><span class="lab">Focus</span><span class="val" id="vSpec">Any <i>\u25BC</i></span></div>
+  </div>
+  <p class="resultline" id="rline">38 clinicians near Dallas, TX</p>
+  <div class="plist" id="plist">${ALL.map(provHTML).join("")}</div>
+  <div class="grow"></div>`;
+}
+const MENUS={
+  selDist:{opts:["Any","Within 5 mi","Within 10 mi","Within 25 mi"],pick:"Within 10 mi",target:"vDist"},
+  selFmt:{opts:["Any","Video","In person"],pick:"In person",target:"vFmt"},
+  selSpec:{opts:["Any","Anxiety","Depression","ADHD","Trauma","Couples","OCD","Grief"],pick:"Anxiety",target:"vSpec"}
+};
+function openMenu(id){
+  const host=screen.querySelector('#'+id); if(!host) return;
+  host.classList.add('open');
+  const m=MENUS[id];
+  const el=document.createElement('div');
+  el.className='selmenu';
+  el.innerHTML=m.opts.map(o=>`<div class="${o===m.pick?'hot':''}">${o}</div>`).join("");
+  host.appendChild(el);
+}
+function chooseMenu(id){
+  const host=screen.querySelector('#'+id); if(!host) return;
+  const m=MENUS[id];
+  host.classList.remove('open'); host.classList.add('set');
+  const menu=host.querySelector('.selmenu'); if(menu) menu.remove();
+  const v=screen.querySelector('#'+m.target);
+  if(v) v.innerHTML=`${m.pick} <i>\u25BC</i>`;
+  applyFilters();
+}
+function applyFilters(){
+  const dist=(screen.querySelector('#vDist')||{}).textContent||"";
+  const fmt=(screen.querySelector('#vFmt')||{}).textContent||"";
+  const spec=(screen.querySelector('#vSpec')||{}).textContent||"";
+  let n=0;
+  ALL.forEach(p=>{
+    let ok=true;
+    if(dist.includes("10 mi") && p.mi>10) ok=false;
+    if(fmt.includes("In person") && p.fmt!=="person") ok=false;
+    if(spec.includes("Anxiety") && !p.spec.includes("anx")) ok=false;
+    const row=screen.querySelector(`[data-k="${p.k}"]`);
+    if(row) row.classList.toggle('gone',!ok);
+    if(ok) n++;
+  });
+  const r=screen.querySelector('#rline');
+  if(r){
+    const parts=[];
+    if(spec.includes("Anxiety")) parts.push("anxiety");
+    if(fmt.includes("In person")) parts.push("in person");
+    if(dist.includes("10 mi")) parts.push("within 10 mi");
+    r.textContent = parts.length ? `${n} match${n===1?"":"es"} \u00B7 ${parts.join(" \u00B7 ")}`
+                                 : `${n===ALL.length?38:n} clinicians near Dallas, TX`;
+  }
+}
+
+const COMMON_OPEN = [
+  { tip:"The patient opens the provider's app.", hold:1950, taps:[{sel:"#appIcon",at:1100}], chrome:false,
+    render(){ return `<div class="home">
+      <div class="homeclock"><b>Thursday, August 27</b><i>9:41</i></div>
+      <div class="homegrid">
+        ${APPS.slice(0,7).map(a=>app(a)).join("")}
+        ${app({n:"Northwood",c:"var(--brand)",g:"N"},"appIcon")}
+        ${APPS.slice(7,11).map(a=>app(a)).join("")}
+      </div>
+      <div class="tipzone"></div>
+      <div class="dock">${DOCK.map(a=>app(a)).join("")}</div>
+    </div>`; } },
+
+  { tip:"The patient browses clinicians taking new patients.", hold:2175, key:"search",
+    render(){ return searchScreen(); } },
+
+  { tip:"They filter by distance, then format, then what they need help with. The list narrows as they go.",
+    hold:9425, key:"search",
+    taps:[{sel:"#selDist",at:575},{sel:"#selFmt",at:3100},{sel:"#selSpec",at:5625},{sel:"#pick",at:8275}],
+    seq:[
+      {at:600, fn:()=>openMenu('selDist')},
+      {at:1550, fn:()=>chooseMenu('selDist')},
+      {at:3125, fn:()=>openMenu('selFmt')},
+      {at:4075, fn:()=>chooseMenu('selFmt')},
+      {at:5650, fn:()=>openMenu('selSpec')},
+      {at:6600, fn:()=>chooseMenu('selSpec')}
+    ],
+    render(){ return searchScreen(); } },
+
+  { tip:'The patient reviews the profile and taps "Schedule my appointment".', hold:3325, taps:[{sel:"#sched",at:2525}],
+    render(){ return `
+      <div class="prohead"><div class="av">AO</div>
+        <div><h3>Dr. Amara Osei</h3><p>PsyD, Licensed Clinical Psychologist</p>
+        <div class="stars">\u2605 4.9 \u00B7 212 patient reviews</div></div></div>
+      <div class="metarow">
+        <div>Experience<b>11 years</b></div><div>Distance<b>2.1 mi</b></div><div>Next open<b>Thu, Sep 3</b></div>
+      </div>
+      <p class="bio">Amara treats adults living with anxiety, panic and burnout. She trained at UT Southwestern and spent six years in hospital outpatient care before opening her practice in Oak Lawn.</p>
+      <p class="bio"><b>Approach.</b> Cognitive behavioural therapy and exposure work, with practical exercises between sessions. Structured rather than open-ended.</p>
+      <div class="tagline" style="margin-bottom:8px">
+        <span class="tag">Anxiety</span><span class="tag">Panic disorder</span><span class="tag">Burnout</span><span class="tag">Adults 18+</span>
+      </div>
+      <div class="grow"></div>
+      <div class="btn" id="sched">Schedule my appointment</div>
+      <p class="legal"><b>By continuing you authorize your wireless carrier to share your mobile number, name, address and device details with Northwood Health and its identity provider to confirm your identity and prevent fraud.</b> You also agree to our <u>Terms</u>, <u>Privacy Policy</u> and <u>HIPAA Notice</u>.</p>`; } }
+];
+
+const REVIEW_ONWARD = [
+  { tip:"User details are pre-populated. User confirms, and opts in to having their insurance found.", hold:3100, taps:[{sel:"#yes",at:2300}],
+    render(){ return `
+      <span class="pill"><span class="dotp"></span>Verified with your carrier</span>
+      <h2 class="t">Is this you?</h2>
+      <div class="card">
+        <div class="who"><div class="av">MR</div><div><h3>Maya Reyes</h3></div></div>
+        <div class="kv"><span>DOB</span><b>Nov 12, 1985</b></div>
+        <div class="kv"><span>Address</span><b>214 Main St, Apt 4<br>Dallas, TX 75201</b></div>
+        <div class="kv"><span>Mobile</span><b>(214) 555\u20110182</b></div>
+      </div>
+      <div class="opt"><div class="boxc">\u2713</div><p>Schedule and recover my insurance<small>We'll find any active insurance plan under your name</small></p></div>
+      <div class="grow"></div>
+      <div class="btn" id="yes">Yes, that's me</div>`; } },
+
+  { tip:"Insurance discovery runs while the user schedules the appointment.",
+    hold:3900, key:"sched", taps:[{sel:"#slot2",at:1725},{sel:"#hold",at:3100}],
+    seq:[{at:1775, fn:()=>{
+      const s=screen.querySelector('#slot2'); if(s) s.classList.add('on');
+      const b=screen.querySelector('#hold'); if(b){ b.style.opacity=1; b.style.pointerEvents='auto'; }
+    }}],
+    render(){ return `
+      <span class="pill live"><span class="dotp"></span>Finding your insurance\u2026</span>
+      <h2 class="t">Schedule my visit</h2>
+      <p class="s">Northwood Downtown \u00B7 1820 Cedar Springs Rd, Suite 210, Dallas, TX 75201<br>Thursday, September 3</p>
+      <div class="slots">
+        <div class="slot"><span>9:00 AM</span><span style="color:var(--muted)">45 min</span></div>
+        <div class="slot" id="slot2"><span>10:30 AM</span><span style="color:var(--muted)">45 min</span></div>
+        <div class="slot"><span>1:45 PM</span><span style="color:var(--muted)">45 min</span></div>
+        <div class="slot"><span>3:15 PM</span><span style="color:var(--muted)">45 min</span></div>
+      </div>
+      <div class="grow"></div>
+      <div class="btn" id="hold" style="opacity:0;transition:opacity .3s ease">Hold 10:30 AM</div>`; } },
+
+  { tip:"Nirvana returns the active policy and what the visit actually costs.", hold:3675, taps:[{sel:"#pay1",at:2750}],
+    render(){ return `
+      <span class="pill"><span class="dotp"></span>In network</span>
+      <h2 class="t">You're covered</h2>
+      <div class="card tint">
+        <div class="kv"><span>Plan</span><b>Aetna Commercial</b></div>
+        <div class="kv"><span>Member ID</span><b>W284016559</b></div>
+        <div class="kv"><span>Status</span><b>Active through Dec 31, 2026</b></div>
+      </div>
+      <div class="card">
+        <div class="kv"><span>Your visit cost</span><b style="font-size:19px">$25.00</b></div>
+        <div class="kv"><span>Northwood bills Aetna</span><b>$185.00</b></div>
+      </div>
+      <div class="grow"></div>
+      <div class="btn" id="pay1">Continue to payment</div>`; } },
+
+  { tip:"User pays up front and confirms appointment.", hold:3450, taps:[{sel:"#applepay",at:2525}],
+    render(){ return `
+      <h2 class="t">Confirm and pay</h2>
+      <div class="card">
+        <div class="kv"><span>Visit</span><b>Therapy, first visit</b></div>
+        <div class="kv"><span>Clinician</span><b>Dr. Amara Osei</b></div>
+        <div class="kv"><span>When</span><b>Thu Sep 3, 10:30 AM</b></div>
+        <div class="kv"><span>Where</span><b>1820 Cedar Springs Rd<br>Suite 210, Dallas TX</b></div>
+        <div class="kv"><span>Due today</span><b style="font-size:19px">$25.00</b></div>
+      </div>
+      <div class="grow"></div>
+      <div class="btn dark" id="applepay">\uF8FF Pay</div>`; } },
+
+  { hold:2750,
+    render(){ return `
+      <h2 class="t">Confirm and pay</h2>
+      <div class="card">
+        <div class="kv"><span>Visit</span><b>Therapy, first visit</b></div>
+        <div class="kv"><span>Clinician</span><b>Dr. Amara Osei</b></div>
+        <div class="kv"><span>Due today</span><b style="font-size:19px">$25.00</b></div>
+      </div>
+      <div class="grow"></div>
+      <div class="apsheet">
+        <div class="aphead"><span>\uF8FF Pay</span><span style="font-size:13px;color:var(--muted)">Cancel</span></div>
+        <div class="apcard"><div><b>Visa \u2022\u2022\u2022\u2022 4127</b><small>Maya Reyes</small></div><div class="apvisa">VISA</div></div>
+        <div class="apcard"><div><b>Northwood Health</b><small>1820 Cedar Springs Rd, Dallas TX</small></div></div>
+        <div class="aptotal"><span>Total</span><span>$25.00</span></div>
+        <div class="faceid"><div class="fi"></div><p>Double-click to confirm</p><small>Face ID \u00B7 looking for you\u2026</small></div>
+      </div>
+      <div class="dbllabel">Double-click</div>
+      <div class="dblclick"></div>`; } },
+
+  { hold:4825, last:true,
+    render(){ return `
+      <div class="grow"></div>
+      <div class="center"><div class="tick">\u2713</div>
+        <h2 class="t">You're booked</h2>
+        <p class="s">Thursday, September 3 at 10:30 AM with Dr. Amara Osei.<br>1820 Cedar Springs Rd, Suite 210, Dallas TX.<br>We texted you the details.</p></div>
+      <div class="grow"></div>`; } }
+];
+
+const STEPS = COMMON_OPEN.concat([
+  { tip:"Nirvana conducts silent authentication of the device. The carrier confirms this device holds this line.", hold:2650,
+    render(){ return `
+      <div class="grow"></div>
+      <div class="center"><div class="spin"></div>
+        <h2 class="t" style="font-size:19px">Confirming it's you</h2>
+        <p class="s">Checking with your mobile carrier.</p></div>
+      <div class="grow"></div>`; } }
+]).concat(REVIEW_ONWARD);
+
+const dots=document.getElementById('dots');
+dots.innerHTML=STEPS.map(()=>'<i></i>').join("");
+function clearAllTimers(){
+  [tapTimers,typeTimers,seqTimers].forEach(a=>{a.forEach(t=>clearTimeout(t));a.length=0;});
+}
+
+function paint(){
+  clearTimeout(timer); clearTimeout(tipTimer); clearAllTimers();
+  vp.querySelectorAll('.tapdot,.tip').forEach(n=>n.remove());
+  const st=STEPS[i];
+  chrome.style.display = st.chrome===false ? "none" : "block";
+  screen.style.padding = st.chrome===false ? "0" : "6px 20px 20px";
+  screen.innerHTML=st.render();
+  screen.classList.remove('in-fwd','in-back','in-fade');
+  void screen.offsetWidth;
+  screen.classList.add(transDir>0?'in-fwd':transDir<0?'in-back':'in-fade');
+  transDir=0;
+  document.getElementById('capn').textContent=`Step ${i+1} of ${STEPS.length}`;
+  [...dots.children].forEach((d,n)=>d.classList.toggle('on',n===i));
+  document.getElementById('back').disabled=i===0;
+  if(typeof recordRun==='function' && st.last) recordRun();
+  if(st.tip) tipTimer=setTimeout(()=>showTip(st.tip),260);
+  if(playing){
+    (st.taps||[]).forEach(t=>tapTimers.push(setTimeout(()=>showTap(t.sel),t.at)));
+    (st.seq||[]).forEach(a=>seqTimers.push(setTimeout(a.fn,a.at)));
+    if(st.type) runType(st.type);
+    timer=setTimeout(nextStep, st.hold);
+  } else {
+    if(st.type){ const el=screen.querySelector(st.type.sel); if(el){ el.classList.remove('empty'); el.textContent=st.type.text; } }
+    (st.seq||[]).forEach(a=>a.fn());
+  }
+}
+function runType(cfg){
+  const el=screen.querySelector(cfg.sel); if(!el) return;
+  const chars=cfg.text.split("");
+  el.textContent=""; el.classList.remove('empty');
+  chars.forEach((c,n)=>{
+    typeTimers.push(setTimeout(()=>{
+      el.innerHTML=cfg.text.slice(0,n+1)+'<span class="caret"></span>';
+      if(n===chars.length-1) typeTimers.push(setTimeout(()=>{el.textContent=cfg.text;},380));
+    }, (cfg.start||600)+n*(cfg.speed||70)));
+  });
+}
+function showTap(sel){
+  const el=screen.querySelector(sel); if(!el) return;
+  const r=el.getBoundingClientRect(), v=vp.getBoundingClientRect();
+  const d=document.createElement('div');
+  d.className='tapdot';
+  d.style.left=(r.left-v.left+r.width/2)+'px';
+  d.style.top=(r.top-v.top+r.height/2)+'px';
+  d.innerHTML=`<i></i>`;
+  vp.appendChild(d);
+  setTimeout(()=>d.remove(),1250);
+}
+function showTip(text){
+  const v=vp.getBoundingClientRect();
+  const zone = screen.querySelector('.tipzone') || screen.querySelector('.grow');
+  const t=document.createElement('div');
+  t.className='tip'; t.textContent=text;
+  t.style.maxWidth=(v.width-36)+'px';
+  vp.appendChild(t);
+  const h=t.offsetHeight, w=t.offsetWidth;
+  let top;
+  if(zone){
+    const z=zone.getBoundingClientRect();
+    const zTop=z.top-v.top, zH=z.height;
+    top = zH>=h+16 ? zTop+(zH-h)/2 : Math.max(60, zTop+zH-h-6);
+  } else { top = v.height-h-84; }
+  t.style.top=Math.min(Math.max(56,top), v.height-h-14)+'px';
+  t.style.left=Math.round((v.width-w)/2)+'px';
+}
+let transDir=0;
+function makeGhost(dir){
+  const g=document.createElement('div');
+  g.className='ghost '+(dir<0?'out-back':'out-fwd');
+  const cs=getComputedStyle(screen);
+  g.style.top=screen.offsetTop+'px';
+  g.style.left=screen.offsetLeft+'px';
+  g.style.width=screen.offsetWidth+'px';
+  g.style.height=screen.offsetHeight+'px';
+  g.style.padding=cs.padding;
+  g.innerHTML=screen.innerHTML;
+  vp.appendChild(g);
+  setTimeout(()=>g.remove(),440);
+}
+function go(n){
+  if(n===i){ paint(); return; }
+  const sameScreen = STEPS[n].key && STEPS[n].key===STEPS[i].key;
+  clearTimeout(timer); clearTimeout(tipTimer); clearAllTimers();
+  if(sameScreen){
+    vp.querySelectorAll('.tip').forEach(t=>{t.classList.add('out');setTimeout(()=>t.remove(),210);});
+    i=n; paintInPlace();
+    return;
+  }
+  vp.querySelectorAll('.tip,.tapdot').forEach(t=>{t.style.transition='opacity .16s ease';t.style.opacity=0;setTimeout(()=>t.remove(),180);});
+  const dir = n>i ? 1 : -1;
+  makeGhost(dir);
+  transDir=dir;
+  const chromeWasHidden = STEPS[i].chrome===false;
+  i=n; paint();
+  if(chromeWasHidden !== (STEPS[i].chrome===false)){
+    chrome.style.opacity=0;
+    requestAnimationFrame(()=>{ chrome.style.opacity=1; });
+  }
+}
+/* same underlying screen: keep the DOM, just re-arm timers and tooltip */
+function paintInPlace(){
+  const st=STEPS[i];
+  document.getElementById('capn').textContent=`Step ${i+1} of ${STEPS.length}`;
+  [...dots.children].forEach((d,n)=>d.classList.toggle('on',n===i));
+  document.getElementById('back').disabled=i===0;
+  if(st.tip) tipTimer=setTimeout(()=>showTip(st.tip),260);
+  if(playing){
+    (st.taps||[]).forEach(t=>tapTimers.push(setTimeout(()=>showTap(t.sel),t.at)));
+    (st.seq||[]).forEach(a=>seqTimers.push(setTimeout(a.fn,a.at)));
+    timer=setTimeout(nextStep, st.hold);
+  } else { (st.seq||[]).forEach(a=>a.fn()); }
+}
+function nextStep(){ if(i<STEPS.length-1){ go(i+1); } else { playing=false; syncPlay(); } }
+function syncPlay(){ document.getElementById('play').textContent = playing?"Pause":"Play"; }
+
+document.getElementById('play').onclick=()=>{
+  if(!playing && i===STEPS.length-1){ playing=true; syncPlay(); i=0; paint(); return; }
+  playing=!playing; syncPlay(); paint();
+};
+document.getElementById('next').onclick=()=>{ playing=false; syncPlay(); if(i<STEPS.length-1) go(i+1); };
+document.getElementById('back').onclick=()=>{ playing=false; syncPlay(); if(i>0) go(i-1); };
+document.getElementById('restart').onclick=()=>{ playing=true; syncPlay(); i=0; paint(); };
+
+const fv=document.getElementById('flowView'), iv=document.getElementById('insView');
+document.getElementById('tabFlow').onclick=()=>swap(true);
+document.getElementById('tabIns').onclick=()=>swap(false);
+function swap(flow){
+  fv.hidden=!flow; iv.hidden=flow;
+  document.getElementById('tabFlow').setAttribute('aria-selected',String(flow));
+  document.getElementById('tabIns').setAttribute('aria-selected',String(!flow));
+  if(!flow){ playing=false; syncPlay(); clearTimeout(timer); clearTimeout(tipTimer); clearAllTimers(); draw(); }
+}
+
+const FUNNEL=[
+  {h:"Opened the app",     s:"session started",         n:4283, t:"n/a"},
+  {h:"Viewed a clinician", s:"opened a profile",        n:3427, t:"41s"},
+  {h:"Tapped schedule",    s:"intent to book",          n:2896, t:"12s"},
+  {h:"Started intake",     s:"accepted consent",        n:2751, t:"9s"},
+  {h:"Identity confirmed", s:"carrier, device or OTP",  n:2550, t:"2s"},
+  {h:"Details confirmed",  s:"reviewed prefilled info", n:2402, t:"11s"},
+  {h:"Time selected",      s:"picked a slot",           n:1936, t:"38s"},
+  {h:"Coverage returned",  s:"policy found or skipped", n:1874, t:"0s"},
+  {h:"Booked and paid",    s:"copay collected",         n:1523, t:"22s"}
+];
+const PCT=[
+  {h:"Browsing clinicians", s:"patient time", p:[18,41,78,164]},
+  {h:"Reading a profile",   s:"patient time", p:[9,19,34,71]},
+  {h:"Identity check",      s:"system time",  p:[1.4,2.1,3.6,9.2]},
+  {h:"Reviewing details",   s:"patient time", p:[6,11,19,38]},
+  {h:"Choosing a time",     s:"patient time", p:[17,38,64,142]},
+  {h:"Insurance lookup",    s:"system time · behind scheduling", p:[2.1,4.2,9.8,24.6]},
+  {h:"Payment",             s:"patient time", p:[11,22,37,68]},
+  {h:"End to end",          s:"app open to booked", p:[62,108,183,391], total:true}
+];
+function draw(){
+  const top=FUNNEL[0].n;
+  let html=`<div class="frow head"><div>Stage</div><div></div><div class="num">Patients</div><div class="dim">Median</div><div class="leak">Drop</div></div>`;
+  html+=FUNNEL.map((f,n)=>{
+    const prev=n===0?null:FUNNEL[n-1].n;
+    const drop=prev?(100-(f.n/prev*100)):0;
+    return `<div class="frow">
+      <div><h3>${f.h}</h3><small>${f.s}</small></div>
+      <div class="trackbar"><div class="fill" style="width:${(f.n/top*100).toFixed(1)}%"></div></div>
+      <div class="num">${f.n.toLocaleString()}</div>
+      <div class="dim">${f.t}</div>
+      <div class="leak ${n===0?'zero':''}">${n===0?'n/a':'−'+drop.toFixed(1)+'%'}</div>
+    </div>`;
+  }).join("");
+  document.getElementById('funnel').innerHTML=html;
+
+  document.getElementById('pcttable').innerHTML=
+    `<tr><th>Stage</th><th>p25</th><th>Median (p50)</th><th>p75</th><th>p95</th></tr>`+
+    PCT.map(r=>`<tr style="${r.total?'font-weight:600':''}">
+      <td><b>${r.h}</b><small>${r.s}</small></td>
+      <td>${r.p[0]}s</td><td class="med">${r.p[1]}s</td><td>${r.p[2]}s</td><td>${r.p[3]}s</td>
+    </tr>`).join("");
+}
+
+let runs=0, counted=false;
+async function loadRuns(){
+  try{ const r=await window.storage.get('proto1:runs'); runs=Number(r.value)||0; }catch(e){ runs=0; }
+  document.getElementById('sRuns').textContent=runs;
+}
+async function recordRun(){
+  if(counted) return; counted=true;
+  runs++; document.getElementById('sRuns').textContent=runs;
+  try{ await window.storage.set('proto1:runs',String(runs)); }catch(e){}
+  setTimeout(()=>{counted=false;},1500);
+}
+loadRuns();
+
+function tickClock(){
+  const el=document.getElementById('clock');
+  if(el) el.textContent=new Date().toLocaleTimeString();
+}
+tickClock(); setInterval(tickClock,1000);
+
+syncPlay();
+paint();
+</script>
+</body>
+</html>
