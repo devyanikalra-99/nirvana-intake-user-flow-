@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Patient intake, no typing</title>
+<title>Patient intake walkthrough, no typing</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Instrument+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
@@ -272,11 +272,7 @@ table.pct td small{display:block;color:var(--muted);font-weight:400;font-size:11
 
 <div class="bar">
   <div class="mark">Northwood Health <span>· patient intake</span></div>
-  <div class="tabs" role="tablist">
-    <button role="tab" aria-selected="true" id="tabFlow">Walkthrough</button>
-    <button role="tab" aria-selected="false" id="tabIns">Insights</button>
-  </div>
-  <div class="spacer"></div>
+    <div class="spacer"></div>
   <div class="swatches" id="sw">
     <p>Brand</p>
     <button class="sw" data-c="#2F6B57" data-s="#E7F0EC" style="background:#2F6B57" aria-pressed="true" title="Sage"></button>
@@ -286,7 +282,6 @@ table.pct td small{display:block;color:var(--muted);font-weight:400;font-size:11
   </div>
 </div>
 
-<div id="flowView">
 <div class="stage">
   <div class="device">
     <div class="notch"></div>
@@ -305,96 +300,6 @@ table.pct td small{display:block;color:var(--muted);font-weight:400;font-size:11
     <button id="restart">Restart</button>
   </div>
 </div>
-</div>
-
-<div id="insView" hidden>
-  <div class="panel">
-    <h1>Intake conversion</h1>
-
-    <div class="livebar">
-      <span class="livetag"><i></i>LIVE · REAL TIME · <span id="clock" style="font-variant-numeric:tabular-nums">--:--:--</span></span>
-      <div class="m"><b>Last 30 days</b><span>rolling window</span></div>
-      <div class="m"><b>1,523</b><span>total sessions booked via mobile app</span></div>
-      <div class="m"><b>4,283</b><span>sessions started</span></div>
-    </div>
-
-    <div class="summary">
-      <h2>Key findings</h2>
-      <ul>
-        <li><b>Silent authentication is worth 23 points of conversion.</b> Sessions confirmed by the carrier book at 71%; sessions that fall back to a one-time code book at 48%.</li>
-        <li><b>31% of sessions fall back to a one-time code.</b> The OTP path should stay a single screen with autofill enabled so the patient is never sent out of the flow to retrieve a code manually.</li>
-        <li><b>Returning patients convert best at 78%.</b> Device recognition removes the identity step entirely on repeat visits. Binding the device on first contact compounds, and this cohort is 17% of volume today.</li>
-        <li><b>Scheduling is the largest single leak at 19.4%.</b> These patients were already verified and already had coverage returned, so the loss is driven by availability rather than by verification.</li>
-        <li><b>28% of coverage lookups return nothing, and those sessions collect no copay.</b> At current volume that is roughly $25,000 per month in payment left uncollected at booking. A card-capture fallback should be added before the payment step rather than after the visit.</li>
-        <li><b>Intake abandonment fell from 34.8% to 7.1%.</b> The residual is concentrated in sessions where both identity paths failed and the patient was routed to manual entry, for example a patient on a prepaid line the carrier could not match, who is then asked to type name, address, date of birth and insurance details by hand.</li>
-      </ul>
-    </div>
-
-    <div class="kpis">
-      <div class="kpi"><b>52.6%</b><span>intent to booked</span><em>+14.2 pts vs. manual intake</em></div>
-      <div class="kpi"><b>1m 48s</b><span>median time to booked</span><em>−4m 12s</em></div>
-      <div class="kpi"><b>61%</b><span>sessions with zero typing</span><em>+61 pts</em></div>
-      <div class="kpi"><b>$21.40</b><span>copay collected per session</span><em>+$9.80</em></div>
-      <div class="kpi"><b>7.1%</b><span>intake abandonment</span><em class="down">was 34.8%</em></div>
-    </div>
-
-    <h2 class="sec">Funnel</h2>
-    <p class="note">Step conversion is measured against the previous stage.</p>
-    <div class="box2" id="funnel"></div>
-    <div class="callout">
-      <h3>Biggest leak: choosing a time</h3>
-      <p>19.4% of patients who confirmed their details never picked a time slot. Every one of them had already been verified and already had coverage returned, so nothing about identity or insurance caused the drop. They saw one day of availability and left. Worth testing a three-day slot window instead of one, or surfacing the next opening on the clinician's profile.</p>
-    </div>
-
-    <div class="split">
-      <div>
-        <h2 class="sec">How identity was confirmed</h2>
-        <div class="box2" style="padding:16px 18px">
-          <div class="mix">
-            <div style="width:44%;background:#2F6B57">44%</div>
-            <div style="width:17%;background:#5E9682">17%</div>
-            <div style="width:31%;background:#9AB6AB">31%</div>
-            <div style="width:8%;background:#C6CFCB;color:#3E4A45">8%</div>
-          </div>
-          <div class="legend">
-            <div class="lrow"><i style="background:#2F6B57"></i>
-              <span>Silent, carrier confirmed<em>First-time patient. The mobile carrier confirms this device holds the line, live, during the session.</em></span><b>1,839</b><span class="conv">71%</span></div>
-            <div class="lrow"><i style="background:#5E9682"></i>
-              <span>Recognized device<em>Returning patient. The device was verified on a previous visit, so no carrier check is needed.</em></span><b>711</b><span class="conv">78%</span></div>
-            <div class="lrow"><i style="background:#9AB6AB"></i>
-              <span>OTP required (silent authentication failed)<em>Wi-Fi, VPN or unsupported carrier. The patient enters their number and a texted code.</em></span><b>1,296</b><span class="conv">48%</span></div>
-            <div class="lrow"><i style="background:#C6CFCB"></i>
-              <span>Could not confirm<em>Neither path completed. The patient is routed to manual entry.</em></span><b>334</b><span class="conv">11%</span></div>
-          </div>
-          <p class="note" style="margin:14px 0 0">Right column is the share of those sessions that reach a booking.</p>
-        </div>
-      </div>
-
-      <div>
-        <h2 class="sec">Insurance recovery</h2>
-        <div class="box2" style="padding:16px 18px">
-          <div class="legend">
-            <div class="lrow"><i style="background:#2F6B57"></i><span>Active policy found</span><b>2,314</b><span class="conv">64%</span></div>
-            <div class="lrow"><i style="background:#9AB6AB"></i><span>Found, needs review</span><b>287</b><span class="conv">8%</span></div>
-            <div class="lrow"><i style="background:#C6CFCB"></i><span>Nothing found</span><b>1,012</b><span class="conv">28%</span></div>
-          </div>
-          <div class="lat">
-            <div><b>4.2s</b><span>median lookup</span></div>
-            <div><b>19.6s</b><span>90th percentile</span></div>
-            <div><b>38s</b><span>median time on scheduling</span></div>
-          </div>
-          <p class="note" style="margin:14px 0 0">Lookup runs behind the scheduling screen; 96% resolve before the patient selects a slot.</p>
-        </div>
-      </div>
-    </div>
-
-    <h2 class="sec">Time spent at each stage</h2>
-    <p class="note">Seconds per patient. p95 is where the slowest sessions abandon.</p>
-    <div class="box2" style="padding:2px 18px 10px"><table class="pct" id="pcttable"></table></div>
-
-    <p class="foot">Figures are illustrative sample data for demonstration. Prototype runs on this device: <b id="sRuns">0</b>.</p>
-  </div>
-</div>
 
 <script>
 document.getElementById('sw').addEventListener('click',e=>{
@@ -404,7 +309,7 @@ document.getElementById('sw').addEventListener('click',e=>{
   document.documentElement.style.setProperty('--brand-soft',b.dataset.s);
 });
 
-const screen=document.getElementById('screen'), chrome=document.getElementById('chrome'), vp=document.getElementById('vp');
+const scr=document.getElementById('screen'), chromeEl=document.getElementById('chrome'), vp=document.getElementById('vp');
 let i=0, playing=true, timer=null, tapTimers=[], tipTimer=null, typeTimers=[], seqTimers=[];
 
 const APPS=[
@@ -449,7 +354,7 @@ const MENUS={
   selSpec:{opts:["Any","Anxiety","Depression","ADHD","Trauma","Couples","OCD","Grief"],pick:"Anxiety",target:"vSpec"}
 };
 function openMenu(id){
-  const host=screen.querySelector('#'+id); if(!host) return;
+  const host=scr.querySelector('#'+id); if(!host) return;
   host.classList.add('open');
   const m=MENUS[id];
   const el=document.createElement('div');
@@ -458,29 +363,29 @@ function openMenu(id){
   host.appendChild(el);
 }
 function chooseMenu(id){
-  const host=screen.querySelector('#'+id); if(!host) return;
+  const host=scr.querySelector('#'+id); if(!host) return;
   const m=MENUS[id];
   host.classList.remove('open'); host.classList.add('set');
   const menu=host.querySelector('.selmenu'); if(menu) menu.remove();
-  const v=screen.querySelector('#'+m.target);
+  const v=scr.querySelector('#'+m.target);
   if(v) v.innerHTML=`${m.pick} <i>\u25BC</i>`;
   applyFilters();
 }
 function applyFilters(){
-  const dist=(screen.querySelector('#vDist')||{}).textContent||"";
-  const fmt=(screen.querySelector('#vFmt')||{}).textContent||"";
-  const spec=(screen.querySelector('#vSpec')||{}).textContent||"";
+  const dist=(scr.querySelector('#vDist')||{}).textContent||"";
+  const fmt=(scr.querySelector('#vFmt')||{}).textContent||"";
+  const spec=(scr.querySelector('#vSpec')||{}).textContent||"";
   let n=0;
   ALL.forEach(p=>{
     let ok=true;
     if(dist.includes("10 mi") && p.mi>10) ok=false;
     if(fmt.includes("In person") && p.fmt!=="person") ok=false;
     if(spec.includes("Anxiety") && !p.spec.includes("anx")) ok=false;
-    const row=screen.querySelector(`[data-k="${p.k}"]`);
+    const row=scr.querySelector(`[data-k="${p.k}"]`);
     if(row) row.classList.toggle('gone',!ok);
     if(ok) n++;
   });
-  const r=screen.querySelector('#rline');
+  const r=scr.querySelector('#rline');
   if(r){
     const parts=[];
     if(spec.includes("Anxiety")) parts.push("anxiety");
@@ -556,8 +461,8 @@ const REVIEW_ONWARD = [
   { tip:"Insurance discovery runs while the user schedules the appointment.",
     hold:3900, key:"sched", taps:[{sel:"#slot2",at:1725},{sel:"#hold",at:3100}],
     seq:[{at:1775, fn:()=>{
-      const s=screen.querySelector('#slot2'); if(s) s.classList.add('on');
-      const b=screen.querySelector('#hold'); if(b){ b.style.opacity=1; b.style.pointerEvents='auto'; }
+      const s=scr.querySelector('#slot2'); if(s) s.classList.add('on');
+      const b=scr.querySelector('#hold'); if(b){ b.style.opacity=1; b.style.pointerEvents='auto'; }
     }}],
     render(){ return `
       <span class="pill live"><span class="dotp"></span>Finding your insurance\u2026</span>
@@ -649,17 +554,16 @@ function paint(){
   clearTimeout(timer); clearTimeout(tipTimer); clearAllTimers();
   vp.querySelectorAll('.tapdot,.tip').forEach(n=>n.remove());
   const st=STEPS[i];
-  chrome.style.display = st.chrome===false ? "none" : "block";
-  screen.style.padding = st.chrome===false ? "0" : "6px 20px 20px";
-  screen.innerHTML=st.render();
-  screen.classList.remove('in-fwd','in-back','in-fade');
-  void screen.offsetWidth;
-  screen.classList.add(transDir>0?'in-fwd':transDir<0?'in-back':'in-fade');
+  chromeEl.style.display = st.chrome===false ? "none" : "block";
+  scr.style.padding = st.chrome===false ? "0" : "6px 20px 20px";
+  scr.innerHTML=st.render();
+  scr.classList.remove('in-fwd','in-back','in-fade');
+  void scr.offsetWidth;
+  scr.classList.add(transDir>0?'in-fwd':transDir<0?'in-back':'in-fade');
   transDir=0;
   document.getElementById('capn').textContent=`Step ${i+1} of ${STEPS.length}`;
   [...dots.children].forEach((d,n)=>d.classList.toggle('on',n===i));
   document.getElementById('back').disabled=i===0;
-  if(typeof recordRun==='function' && st.last) recordRun();
   if(st.tip) tipTimer=setTimeout(()=>showTip(st.tip),260);
   if(playing){
     (st.taps||[]).forEach(t=>tapTimers.push(setTimeout(()=>showTap(t.sel),t.at)));
@@ -667,12 +571,12 @@ function paint(){
     if(st.type) runType(st.type);
     timer=setTimeout(nextStep, st.hold);
   } else {
-    if(st.type){ const el=screen.querySelector(st.type.sel); if(el){ el.classList.remove('empty'); el.textContent=st.type.text; } }
+    if(st.type){ const el=scr.querySelector(st.type.sel); if(el){ el.classList.remove('empty'); el.textContent=st.type.text; } }
     (st.seq||[]).forEach(a=>a.fn());
   }
 }
 function runType(cfg){
-  const el=screen.querySelector(cfg.sel); if(!el) return;
+  const el=scr.querySelector(cfg.sel); if(!el) return;
   const chars=cfg.text.split("");
   el.textContent=""; el.classList.remove('empty');
   chars.forEach((c,n)=>{
@@ -683,7 +587,7 @@ function runType(cfg){
   });
 }
 function showTap(sel){
-  const el=screen.querySelector(sel); if(!el) return;
+  const el=scr.querySelector(sel); if(!el) return;
   const r=el.getBoundingClientRect(), v=vp.getBoundingClientRect();
   const d=document.createElement('div');
   d.className='tapdot';
@@ -695,7 +599,7 @@ function showTap(sel){
 }
 function showTip(text){
   const v=vp.getBoundingClientRect();
-  const zone = screen.querySelector('.tipzone') || screen.querySelector('.grow');
+  const zone = scr.querySelector('.tipzone') || scr.querySelector('.grow');
   const t=document.createElement('div');
   t.className='tip'; t.textContent=text;
   t.style.maxWidth=(v.width-36)+'px';
@@ -714,13 +618,13 @@ let transDir=0;
 function makeGhost(dir){
   const g=document.createElement('div');
   g.className='ghost '+(dir<0?'out-back':'out-fwd');
-  const cs=getComputedStyle(screen);
-  g.style.top=screen.offsetTop+'px';
-  g.style.left=screen.offsetLeft+'px';
-  g.style.width=screen.offsetWidth+'px';
-  g.style.height=screen.offsetHeight+'px';
+  const cs=getComputedStyle(scr);
+  g.style.top=scr.offsetTop+'px';
+  g.style.left=scr.offsetLeft+'px';
+  g.style.width=scr.offsetWidth+'px';
+  g.style.height=scr.offsetHeight+'px';
   g.style.padding=cs.padding;
-  g.innerHTML=screen.innerHTML;
+  g.innerHTML=scr.innerHTML;
   vp.appendChild(g);
   setTimeout(()=>g.remove(),440);
 }
@@ -740,8 +644,8 @@ function go(n){
   const chromeWasHidden = STEPS[i].chrome===false;
   i=n; paint();
   if(chromeWasHidden !== (STEPS[i].chrome===false)){
-    chrome.style.opacity=0;
-    requestAnimationFrame(()=>{ chrome.style.opacity=1; });
+    chromeEl.style.opacity=0;
+    requestAnimationFrame(()=>{ chromeEl.style.opacity=1; });
   }
 }
 /* same underlying screen: keep the DOM, just re-arm timers and tooltip */
@@ -768,79 +672,8 @@ document.getElementById('next').onclick=()=>{ playing=false; syncPlay(); if(i<ST
 document.getElementById('back').onclick=()=>{ playing=false; syncPlay(); if(i>0) go(i-1); };
 document.getElementById('restart').onclick=()=>{ playing=true; syncPlay(); i=0; paint(); };
 
-const fv=document.getElementById('flowView'), iv=document.getElementById('insView');
-document.getElementById('tabFlow').onclick=()=>swap(true);
-document.getElementById('tabIns').onclick=()=>swap(false);
-function swap(flow){
-  fv.hidden=!flow; iv.hidden=flow;
-  document.getElementById('tabFlow').setAttribute('aria-selected',String(flow));
-  document.getElementById('tabIns').setAttribute('aria-selected',String(!flow));
-  if(!flow){ playing=false; syncPlay(); clearTimeout(timer); clearTimeout(tipTimer); clearAllTimers(); draw(); }
-}
 
-const FUNNEL=[
-  {h:"Opened the app",     s:"session started",         n:4283, t:"n/a"},
-  {h:"Viewed a clinician", s:"opened a profile",        n:3427, t:"41s"},
-  {h:"Tapped schedule",    s:"intent to book",          n:2896, t:"12s"},
-  {h:"Started intake",     s:"accepted consent",        n:2751, t:"9s"},
-  {h:"Identity confirmed", s:"carrier, device or OTP",  n:2550, t:"2s"},
-  {h:"Details confirmed",  s:"reviewed prefilled info", n:2402, t:"11s"},
-  {h:"Time selected",      s:"picked a slot",           n:1936, t:"38s"},
-  {h:"Coverage returned",  s:"policy found or skipped", n:1874, t:"0s"},
-  {h:"Booked and paid",    s:"copay collected",         n:1523, t:"22s"}
-];
-const PCT=[
-  {h:"Browsing clinicians", s:"patient time", p:[18,41,78,164]},
-  {h:"Reading a profile",   s:"patient time", p:[9,19,34,71]},
-  {h:"Identity check",      s:"system time",  p:[1.4,2.1,3.6,9.2]},
-  {h:"Reviewing details",   s:"patient time", p:[6,11,19,38]},
-  {h:"Choosing a time",     s:"patient time", p:[17,38,64,142]},
-  {h:"Insurance lookup",    s:"system time · behind scheduling", p:[2.1,4.2,9.8,24.6]},
-  {h:"Payment",             s:"patient time", p:[11,22,37,68]},
-  {h:"End to end",          s:"app open to booked", p:[62,108,183,391], total:true}
-];
-function draw(){
-  const top=FUNNEL[0].n;
-  let html=`<div class="frow head"><div>Stage</div><div></div><div class="num">Patients</div><div class="dim">Median</div><div class="leak">Drop</div></div>`;
-  html+=FUNNEL.map((f,n)=>{
-    const prev=n===0?null:FUNNEL[n-1].n;
-    const drop=prev?(100-(f.n/prev*100)):0;
-    return `<div class="frow">
-      <div><h3>${f.h}</h3><small>${f.s}</small></div>
-      <div class="trackbar"><div class="fill" style="width:${(f.n/top*100).toFixed(1)}%"></div></div>
-      <div class="num">${f.n.toLocaleString()}</div>
-      <div class="dim">${f.t}</div>
-      <div class="leak ${n===0?'zero':''}">${n===0?'n/a':'−'+drop.toFixed(1)+'%'}</div>
-    </div>`;
-  }).join("");
-  document.getElementById('funnel').innerHTML=html;
 
-  document.getElementById('pcttable').innerHTML=
-    `<tr><th>Stage</th><th>p25</th><th>Median (p50)</th><th>p75</th><th>p95</th></tr>`+
-    PCT.map(r=>`<tr style="${r.total?'font-weight:600':''}">
-      <td><b>${r.h}</b><small>${r.s}</small></td>
-      <td>${r.p[0]}s</td><td class="med">${r.p[1]}s</td><td>${r.p[2]}s</td><td>${r.p[3]}s</td>
-    </tr>`).join("");
-}
-
-let runs=0, counted=false;
-async function loadRuns(){
-  try{ const r=await window.storage.get('proto1:runs'); runs=Number(r.value)||0; }catch(e){ runs=0; }
-  document.getElementById('sRuns').textContent=runs;
-}
-async function recordRun(){
-  if(counted) return; counted=true;
-  runs++; document.getElementById('sRuns').textContent=runs;
-  try{ await window.storage.set('proto1:runs',String(runs)); }catch(e){}
-  setTimeout(()=>{counted=false;},1500);
-}
-loadRuns();
-
-function tickClock(){
-  const el=document.getElementById('clock');
-  if(el) el.textContent=new Date().toLocaleTimeString();
-}
-tickClock(); setInterval(tickClock,1000);
 
 syncPlay();
 paint();
