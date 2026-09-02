@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Patient intake walkthrough, no typing</title>
+<title>User intake walkthrough, no typing</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Instrument+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
@@ -390,7 +390,7 @@ function applyFilters(){
 }
 
 const COMMON_OPEN = [
-  { tip:"The patient opens the provider's app.", hold:1950, taps:[{sel:"#appIcon",at:1100}], chrome:false,
+  { tip:"The user opens the provider's app.", hold:1950, taps:[{sel:"#appIcon",at:1100}], chrome:false,
     render(){ return `<div class="home">
       <div class="homeclock"><b>Thursday, August 27</b><i>9:41</i></div>
       <div class="homegrid">
@@ -402,7 +402,7 @@ const COMMON_OPEN = [
       <div class="dock">${DOCK.map(a=>app(a)).join("")}</div>
     </div>`; } },
 
-  { tip:"The patient browses clinicians taking new patients.", hold:2175, key:"search",
+  { tip:"The user browses clinicians accepting new appointments.", hold:2175, key:"search",
     render(){ return searchScreen(); } },
 
   { tip:"They filter by distance, then format, then what they need help with. The list narrows as they go.",
@@ -418,15 +418,15 @@ const COMMON_OPEN = [
     ],
     render(){ return searchScreen(); } },
 
-  { tip:'The patient reviews the profile and taps "Schedule my appointment".', hold:3325, taps:[{sel:"#sched",at:2525}],
+  { tip:'The user reviews the profile and taps "Schedule my appointment".', hold:3325, taps:[{sel:"#sched",at:2525}],
     render(){ return `
       <div class="prohead"><div class="av">AO</div>
         <div><h3>Dr. Amara Osei</h3><p>PsyD, Licensed Clinical Psychologist</p>
-        <div class="stars">\u2605 4.9 \u00B7 212 patient reviews</div></div></div>
+        <div class="stars">\u2605 4.9 \u00B7 212 user reviews</div></div></div>
       <div class="metarow">
         <div>Experience<b>11 years</b></div><div>Distance<b>2.1 mi</b></div><div>Next open<b>Thu, Sep 3</b></div>
       </div>
-      <p class="bio">Amara treats adults living with anxiety, panic and burnout. She trained at UT Southwestern and spent six years in hospital outpatient care before opening her practice in Oak Lawn.</p>
+      <p class="bio">Amara treats adults living with anxiety, panic and burnout. She trained at UT Southwestern and spent six years in hospital outuser care before opening her practice in Oak Lawn.</p>
       <p class="bio"><b>Approach.</b> Cognitive behavioural therapy and exposure work, with practical exercises between sessions. Structured rather than open-ended.</p>
       <div class="tagline" style="margin-bottom:8px">
         <span class="tag">Anxiety</span><span class="tag">Panic disorder</span><span class="tag">Burnout</span><span class="tag">Adults 18+</span>
