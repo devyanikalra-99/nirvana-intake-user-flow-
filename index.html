@@ -149,8 +149,8 @@ p.s{font-size:13px;line-height:1.5;color:var(--muted);margin:0 0 12px}
 @keyframes scan{0%,100%{opacity:1}50%{opacity:.35}}
 .faceid p{margin:0;font-size:13px;font-weight:600}
 .faceid small{color:var(--muted);font-size:11px}
-.dblclick{position:absolute;right:-11px;top:150px;width:4px;height:64px;background:#3A3F47;border-radius:0 3px 3px 0}
-.dbllabel{position:absolute;right:8px;top:118px;background:var(--ink);color:#fff;font-size:10px;font-weight:600;padding:4px 8px;border-radius:14px;z-index:9}
+.dblclick{position:absolute;right:-11px;top:128px;width:4px;height:64px;background:#3A3F47;border-radius:0 3px 3px 0}
+.dbllabel{position:absolute;right:8px;top:96px;background:var(--ink);color:#fff;font-size:10px;font-weight:600;padding:4px 8px;border-radius:14px;z-index:9}
 
 /* tap + tooltip */
 .tapdot{position:absolute;z-index:8;pointer-events:none;transform:translate(-50%,-50%)}
@@ -231,6 +231,59 @@ table.pct td.med{font-weight:700}
 table.pct td small{display:block;color:var(--muted);font-weight:400;font-size:11.5px;margin-top:1px}
 .foot{font-size:12.5px;color:var(--muted);margin-top:24px}
 @media (max-width:860px){.split{grid-template-columns:1fr}.frow{grid-template-columns:130px 1fr 60px 50px 56px;font-size:12px}}
+
+/* time slots on the provider profile */
+.slotrow{display:grid;grid-template-columns:repeat(3,1fr);gap:6px;margin-bottom:9px}
+.dayrow{display:flex;align-items:center;gap:8px;margin:0 0 5px}
+.dayrow p{font-size:11px;font-weight:700;color:var(--ink);margin:0;white-space:nowrap}
+.dayrow span{flex:1;height:1px;background:#EEF0F3}
+.tchip{font-size:11.5px;font-weight:600;text-align:center;padding:8px 4px;border:1px solid var(--hair);
+  border-radius:10px;background:var(--paper);transition:background .22s ease,border-color .22s ease,color .22s ease}
+.tchip.on{background:var(--brand);border-color:var(--brand);color:#fff}
+.slotlab{font-size:10px;font-weight:700;letter-spacing:.07em;text-transform:uppercase;color:#98A0AD;margin:0 0 6px}
+
+/* the verification moment */
+.verify{padding:0 4px}
+.vring{width:70px;height:70px;border-radius:50%;margin:0 auto 20px;position:relative;
+  background:conic-gradient(var(--brand) 0turn, #E9ECEF 0turn);animation:sweep 2.6s cubic-bezier(.4,0,.5,1) forwards}
+@keyframes sweep{to{background:conic-gradient(var(--brand) 1turn, #E9ECEF 1turn)}}
+.vring::after{content:"";position:absolute;inset:7px;border-radius:50%;background:var(--paper)}
+.vring b{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;font-size:22px;color:var(--brand);z-index:2}
+.vlist{display:flex;flex-direction:column;gap:10px;margin-top:6px}
+.vitem{display:flex;align-items:center;gap:10px;font-size:13.5px;color:#A8B0BC;transition:color .3s ease}
+.vitem .dotv{width:18px;height:18px;border-radius:50%;border:2px solid #DDE1E7;flex:none;display:flex;
+  align-items:center;justify-content:center;font-size:10px;color:#fff;transition:background .3s ease,border-color .3s ease}
+.vitem.done{color:var(--ink);font-weight:600}
+.vitem.done .dotv{background:var(--brand);border-color:var(--brand)}
+
+/* combined confirm page */
+.seclab{font-size:9.5px;font-weight:700;letter-spacing:.09em;text-transform:uppercase;color:#98A0AD;margin:0 0 6px}
+.cost{display:flex;justify-content:space-between;align-items:baseline;padding:12px 14px;border-radius:12px;
+  background:var(--brand-soft);margin-bottom:11px}
+.cost span{font-size:12.5px;font-weight:600;color:var(--brand)}
+.cost b{font-size:23px;letter-spacing:-.02em;color:var(--brand)}
+
+/* centred booking summary behind the pay sheet */
+.bookcard{border:1px solid var(--hair);border-radius:18px;padding:20px 18px 16px;text-align:center;
+  box-shadow:0 10px 30px -22px rgba(16,20,28,.4)}
+.bkav{width:52px;height:52px;border-radius:50%;background:var(--brand);color:#fff;font-weight:600;font-size:16px;
+  display:flex;align-items:center;justify-content:center;margin:0 auto 11px}
+.bookcard h3{margin:0;font-size:17.5px;letter-spacing:-.015em}
+.bookcard p{margin:3px 0 14px;font-size:12.5px;color:var(--muted)}
+.bkwhen{display:grid;grid-template-columns:1fr 1fr;gap:10px;padding:12px 0;border-top:1px solid #EEF0F3;border-bottom:1px solid #EEF0F3}
+.bkwhen span{display:block;font-size:10px;font-weight:700;letter-spacing:.07em;text-transform:uppercase;color:#98A0AD;margin-bottom:2px}
+.bkwhen b{font-size:15px;letter-spacing:-.01em}
+.bkamt{display:flex;justify-content:space-between;align-items:baseline;padding-top:13px}
+.bkamt span{font-size:12.5px;color:var(--muted)}
+.bkamt b{font-size:26px;letter-spacing:-.025em;color:var(--brand)}
+
+/* consent checkbox beside the terms */
+.consent{display:flex;gap:9px;align-items:flex-start;margin-top:11px}
+.cbox{width:17px;height:17px;border-radius:4px;border:1.5px solid var(--hair);background:var(--paper);flex:none;
+  margin-top:1px;display:flex;align-items:center;justify-content:center;font-size:11px;color:#fff;
+  transition:background .22s ease,border-color .22s ease}
+.cbox.on{background:var(--brand);border-color:var(--brand)}
+.consent .legal{margin:0}
 @media (prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}}
 
 /* typed fields */
@@ -389,8 +442,9 @@ function applyFilters(){
   }
 }
 
-const COMMON_OPEN = [
-  { tip:"The user opens the provider's app.", hold:1950, taps:[{sel:"#appIcon",at:1100}], chrome:false,
+const STEPS = [
+
+  { tip:"The user opens the provider's app.", hold:1700, taps:[{sel:"#appIcon",at:950}], chrome:false,
     render(){ return `<div class="home">
       <div class="homeclock"><b>Thursday, August 27</b><i>9:41</i></div>
       <div class="homegrid">
@@ -402,112 +456,120 @@ const COMMON_OPEN = [
       <div class="dock">${DOCK.map(a=>app(a)).join("")}</div>
     </div>`; } },
 
-  { tip:"The user browses clinicians accepting new appointments.", hold:2175, key:"search",
+  { tip:"The user browses clinicians accepting new appointments.", hold:1600, key:"search",
     render(){ return searchScreen(); } },
 
-  { tip:"User selects a provider for care.",
-    hold:9425, key:"search",
-    taps:[{sel:"#selDist",at:575},{sel:"#selFmt",at:3100},{sel:"#selSpec",at:5625},{sel:"#pick",at:8275}],
+  { tip:"User selects a provider for care.", hold:4400, key:"search",
+    taps:[{sel:"#selDist",at:250},{sel:"#selFmt",at:1150},{sel:"#selSpec",at:2050},{sel:"#pick",at:3500}],
     seq:[
-      {at:600, fn:()=>openMenu('selDist')},
-      {at:1550, fn:()=>chooseMenu('selDist')},
-      {at:3125, fn:()=>openMenu('selFmt')},
-      {at:4075, fn:()=>chooseMenu('selFmt')},
-      {at:5650, fn:()=>openMenu('selSpec')},
-      {at:6600, fn:()=>chooseMenu('selSpec')}
+      {at:260, fn:()=>openMenu('selDist')},
+      {at:700, fn:()=>chooseMenu('selDist')},
+      {at:1160, fn:()=>openMenu('selFmt')},
+      {at:1600, fn:()=>chooseMenu('selFmt')},
+      {at:2060, fn:()=>openMenu('selSpec')},
+      {at:2500, fn:()=>chooseMenu('selSpec')}
     ],
     render(){ return searchScreen(); } },
 
-  { tip:'The user reviews the profile and taps "Schedule my appointment".', hold:3325, taps:[{sel:"#sched",at:2525}],
+  { tip:"User schedules the appointment and permits Nirvana to recover demographic and insurance details.",
+    hold:5400, taps:[{sel:"#slot2",at:1400},{sel:"#cbox",at:2900},{sel:"#sched",at:4200}],
+    seq:[
+      {at:1450, fn:()=>{ const c=scr.querySelector('#slot2'); if(c) c.classList.add('on'); }},
+      {at:2950, fn:()=>{ const b=scr.querySelector('#cbox'); if(b){ b.classList.add('on'); b.textContent='\u2713'; } }}
+    ],
     render(){ return `
       <div class="prohead"><div class="av">AO</div>
         <div><h3>Dr. Amara Osei</h3><p>PsyD, Licensed Clinical Psychologist</p>
-        <div class="stars">\u2605 4.9 \u00B7 212 user reviews</div></div></div>
-      <div class="metarow">
-        <div>Experience<b>11 years</b></div><div>Distance<b>2.1 mi</b></div><div>Next open<b>Thu, Sep 3</b></div>
+        <div class="stars">\u2605 4.9 \u00B7 212 reviews \u00B7 2.1 mi</div></div></div>
+      <p class="bio">Anxiety, panic and burnout in adults. Cognitive behavioural therapy, structured rather than open-ended.</p>
+      <p class="slotlab">Choose a time</p>
+      <div class="dayrow"><p>Thu, Sep 3</p><span></span></div>
+      <div class="slotrow">
+        <div class="tchip">9:00 AM</div>
+        <div class="tchip" id="slot2">10:30 AM</div>
+        <div class="tchip">1:45 PM</div>
       </div>
-      <p class="bio">Amara treats adults living with anxiety, panic and burnout. She trained at UT Southwestern and spent six years in hospital outuser care before opening her practice in Oak Lawn.</p>
-      <p class="bio"><b>Approach.</b> Cognitive behavioural therapy and exposure work, with practical exercises between sessions. Structured rather than open-ended.</p>
-      <div class="tagline" style="margin-bottom:8px">
-        <span class="tag">Anxiety</span><span class="tag">Panic disorder</span><span class="tag">Burnout</span><span class="tag">Adults 18+</span>
+      <div class="dayrow"><p>Fri, Sep 4</p><span></span></div>
+      <div class="slotrow">
+        <div class="tchip">8:15 AM</div>
+        <div class="tchip">11:00 AM</div>
+        <div class="tchip">2:30 PM</div>
+      </div>
+      <div class="dayrow"><p>Sat, Sep 5</p><span></span></div>
+      <div class="slotrow">
+        <div class="tchip">9:45 AM</div>
+        <div class="tchip">12:15 PM</div>
+        <div class="tchip">3:00 PM</div>
       </div>
       <div class="grow"></div>
-      <div class="btn" id="sched">Schedule my appointment</div>
-      <p class="legal"><b>By continuing you authorize your wireless carrier to share your mobile number, name, address and device details with Northwood Health and its identity provider to confirm your identity and prevent fraud.</b> You also agree to our <u>Terms</u>, <u>Privacy Policy</u> and <u>HIPAA Notice</u>.</p>`; } }
-];
+      <div class="consent">
+        <div class="cbox" id="cbox"></div>
+        <p class="legal"><b>I authorize my wireless carrier to share my mobile number, name, address and device details with Northwood Health to confirm my identity, and I authorize Northwood Health to recover my demographic information and check my insurance eligibility.</b> I agree to the <u>Terms</u>, <u>Privacy Policy</u> and <u>HIPAA Notice</u>.</p>
+      </div>
+      <div class="btn" id="sched" style="margin-top:12px">Schedule My Appointment</div>`; } },
 
-const REVIEW_ONWARD = [
-  { tip:"User details are pre-populated. User confirms, and opts in to having their insurance found.", hold:3100, taps:[{sel:"#yes",at:2300}],
+  { tip:"Nirvana confirms user's identity and recovers active insurance details.",
+    hold:4600,
+    seq:[
+      {at:1200, fn:()=>{ const e=scr.querySelector('#v1'); if(e){e.classList.add('done'); e.querySelector('.dotv').textContent='\u2713';} }},
+      {at:2700, fn:()=>{ const e=scr.querySelector('#v2'); if(e){e.classList.add('done'); e.querySelector('.dotv').textContent='\u2713';} }}
+    ],
     render(){ return `
-      <span class="pill"><span class="dotp"></span>Verified with your carrier</span>
-      <h2 class="t">Is this you?</h2>
-      <div class="card">
-        <div class="who"><div class="av">MR</div><div><h3>Maya Reyes</h3></div></div>
+      <div class="grow"></div>
+      <div class="verify">
+        <div class="vring"><b>\u25CF</b></div>
+        <h2 class="t" style="text-align:center;font-size:20px;margin-bottom:18px">Confirming it's you</h2>
+        <div class="vlist">
+          <div class="vitem" id="v1"><span class="dotv"></span>Identity verified</div>
+          <div class="vitem" id="v2"><span class="dotv"></span>Insurance recovered</div>
+        </div>
+      </div>
+      <div class="grow"></div>`; } },
+
+  { tip:"User demographics and insurance details are autopopulated.",
+    hold:6400, taps:[{sel:"#confirm",at:4900}],
+    render(){ return `
+      <span class="pill"><span class="dotp"></span>Verified \u00B7 in network</span>
+      <h2 class="t" style="margin-bottom:12px">Confirm and book</h2>
+
+      <p class="seclab">Your details</p>
+      <div class="card" style="padding:12px 14px">
+        <div class="who" style="margin-bottom:8px"><div class="av">MR</div><div><h3 style="font-size:15px">Maya Reyes</h3></div></div>
         <div class="kv"><span>DOB</span><b>Nov 12, 1985</b></div>
-        <div class="kv"><span>Address</span><b>214 Main St, Apt 4<br>Dallas, TX 75201</b></div>
-        <div class="kv"><span>Mobile</span><b>(214) 555\u20110182</b></div>
+        <div class="kv"><span>Address</span><b>214 Main St, Apt 4, Dallas TX</b></div>
       </div>
-      <div class="opt"><div class="boxc">\u2713</div><p>Schedule and recover my insurance<small>We'll find any active insurance plan under your name</small></p></div>
-      <div class="grow"></div>
-      <div class="btn" id="yes">Yes, that's me</div>`; } },
 
-  { tip:"Insurance discovery runs while the user schedules the appointment.",
-    hold:3900, key:"sched", taps:[{sel:"#slot2",at:1725},{sel:"#hold",at:3100}],
-    seq:[{at:1775, fn:()=>{
-      const s=scr.querySelector('#slot2'); if(s) s.classList.add('on');
-      const b=scr.querySelector('#hold'); if(b){ b.style.opacity=1; b.style.pointerEvents='auto'; }
-    }}],
-    render(){ return `
-      <span class="pill live"><span class="dotp"></span>Finding your insurance\u2026</span>
-      <h2 class="t">Schedule my visit</h2>
-      <p class="s">Northwood Downtown \u00B7 1820 Cedar Springs Rd, Suite 210, Dallas, TX 75201<br>Thursday, September 3</p>
-      <div class="slots">
-        <div class="slot"><span>9:00 AM</span><span style="color:var(--muted)">45 min</span></div>
-        <div class="slot" id="slot2"><span>10:30 AM</span><span style="color:var(--muted)">45 min</span></div>
-        <div class="slot"><span>1:45 PM</span><span style="color:var(--muted)">45 min</span></div>
-        <div class="slot"><span>3:15 PM</span><span style="color:var(--muted)">45 min</span></div>
-      </div>
-      <div class="grow"></div>
-      <div class="btn" id="hold" style="opacity:0;transition:opacity .3s ease">Hold 10:30 AM</div>`; } },
-
-  { tip:"Nirvana returns the active policy and what the visit actually costs.", hold:3675, taps:[{sel:"#pay1",at:2750}],
-    render(){ return `
-      <span class="pill"><span class="dotp"></span>In network</span>
-      <h2 class="t">You're covered</h2>
-      <div class="card tint">
+      <p class="seclab">Your insurance</p>
+      <div class="card tint" style="padding:12px 14px">
         <div class="kv"><span>Plan</span><b>Aetna Commercial</b></div>
         <div class="kv"><span>Member ID</span><b>W284016559</b></div>
         <div class="kv"><span>Status</span><b>Active through Dec 31, 2026</b></div>
       </div>
-      <div class="card">
-        <div class="kv"><span>Your visit cost</span><b style="font-size:19px">$25.00</b></div>
-        <div class="kv"><span>Northwood bills Aetna</span><b>$185.00</b></div>
-      </div>
-      <div class="grow"></div>
-      <div class="btn" id="pay1">Continue to payment</div>`; } },
 
-  { tip:"User pays up front and confirms appointment.", hold:3450, taps:[{sel:"#applepay",at:2525}],
-    render(){ return `
-      <h2 class="t">Confirm and pay</h2>
-      <div class="card">
-        <div class="kv"><span>Visit</span><b>Therapy, first visit</b></div>
-        <div class="kv"><span>Clinician</span><b>Dr. Amara Osei</b></div>
+      <p class="seclab">Your visit</p>
+      <div class="card" style="padding:12px 14px">
         <div class="kv"><span>When</span><b>Thu Sep 3, 10:30 AM</b></div>
-        <div class="kv"><span>Where</span><b>1820 Cedar Springs Rd<br>Suite 210, Dallas TX</b></div>
-        <div class="kv"><span>Due today</span><b style="font-size:19px">$25.00</b></div>
+        <div class="kv"><span>Where</span><b>1820 Cedar Springs Rd, Ste 210</b></div>
       </div>
-      <div class="grow"></div>
-      <div class="btn dark" id="applepay">\uF8FF Pay</div>`; } },
 
-  { hold:2750,
+      <div class="cost"><span>Your cost today</span><b>$25.00</b></div>
+      <div class="tipzone" style="min-height:70px"></div>
+      <div class="btn dark" id="confirm">\uF8FF Pay $25 and book</div>`; } },
+
+  { hold:2600,
     render(){ return `
-      <h2 class="t">Confirm and pay</h2>
-      <div class="card">
-        <div class="kv"><span>Visit</span><b>Therapy, first visit</b></div>
-        <div class="kv"><span>Clinician</span><b>Dr. Amara Osei</b></div>
-        <div class="kv"><span>Due today</span><b style="font-size:19px">$25.00</b></div>
-      </div>
       <div class="grow"></div>
+      <div class="bookcard">
+        <div class="bkav">AO</div>
+        <h3>Dr. Amara Osei</h3>
+        <p>Therapy, first visit \u00B7 45 min</p>
+        <div class="bkwhen">
+          <div><span>Thursday</span><b>Sep 3</b></div>
+          <div><span>Arrive</span><b>10:30 AM</b></div>
+        </div>
+        <div class="bkamt"><span>Due today</span><b>$25.00</b></div>
+      </div>
+      <div class="grow" style="flex:2.4"></div>
       <div class="apsheet">
         <div class="aphead"><span>\uF8FF Pay</span><span style="font-size:13px;color:var(--muted)">Cancel</span></div>
         <div class="apcard"><div><b>Visa \u2022\u2022\u2022\u2022 4127</b><small>Maya Reyes</small></div><div class="apvisa">VISA</div></div>
@@ -518,7 +580,7 @@ const REVIEW_ONWARD = [
       <div class="dbllabel">Double-click</div>
       <div class="dblclick"></div>`; } },
 
-  { hold:4825, last:true,
+  { hold:3600, last:true,
     render(){ return `
       <div class="grow"></div>
       <div class="center"><div class="tick">\u2713</div>
@@ -526,16 +588,6 @@ const REVIEW_ONWARD = [
         <p class="s">Thursday, September 3 at 10:30 AM with Dr. Amara Osei.<br>1820 Cedar Springs Rd, Suite 210, Dallas TX.<br>We texted you the details.</p></div>
       <div class="grow"></div>`; } }
 ];
-
-const STEPS = COMMON_OPEN.concat([
-  { tip:"Nirvana conducts silent authentication of the device. The carrier confirms this device holds this line.", hold:2650,
-    render(){ return `
-      <div class="grow"></div>
-      <div class="center"><div class="spin"></div>
-        <h2 class="t" style="font-size:19px">Confirming it's you</h2>
-        <p class="s">Checking with your mobile carrier.</p></div>
-      <div class="grow"></div>`; } }
-]).concat(REVIEW_ONWARD);
 
 const dots=document.getElementById('dots');
 dots.innerHTML=STEPS.map(()=>'<i></i>').join("");
